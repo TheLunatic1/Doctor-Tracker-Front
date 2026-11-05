@@ -80,10 +80,10 @@ test.describe('Phase 5 Quality Gate: Frontend Foundation & Authentication Flow',
 
     // Verify redirection to /dashboard
     await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByText('Doctor Tracker')).toBeVisible();
-    await expect(page.getByRole('link', { name: /dashboard/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /doctors/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /patients/i })).toBeVisible();
+    await expect(page.getByText('Doctor Tracker').first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Dashboard', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Doctors', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Patients', exact: true })).toBeVisible();
   });
 
   test('Logout action clears session and redirects to /login', async ({ page, context }) => {
