@@ -22,6 +22,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Stethoscope,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -185,9 +186,23 @@ export default function PatientsPage() {
 
   const patientsList = data?.data || [];
   const meta = data?.meta;
+  const isDoctor = user?.role === 'doctor';
+  const isStaff = user?.role === 'staff';
+
+  const pageTitle = isDoctor
+    ? 'My Assigned Patients'
+    : isStaff
+    ? 'Patient Roster'
+    : 'Patients';
+
+  const pageSubtitle = isDoctor
+    ? `Clinical inpatient & outpatient roster for ${user?.name || 'Dr. S. M. Toha'}`
+    : isStaff
+    ? 'Hospital Admissions Desk & Active Inpatient Directory'
+    : 'Manage and view all patients in the system.';
 
   return (
-    <AppShell title="Patients" subtitle="Manage and view all patients in the system.">
+    <AppShell title={pageTitle} subtitle={pageSubtitle}>
       {/* Header and Add Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
@@ -195,8 +210,8 @@ export default function PatientsPage() {
             <Users className="h-6 w-6 stroke-[2.2]" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Patients</h2>
-            <p className="text-xs text-slate-500">Manage and view all patients in the system.</p>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">{pageTitle}</h2>
+            <p className="text-xs text-slate-500">{pageSubtitle}</p>
           </div>
         </div>
 
@@ -223,12 +238,16 @@ export default function PatientsPage() {
               <Users className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Total Patients</p>
-              <p className="text-2xl font-extrabold text-slate-900 mt-0.5">{meta?.total || 1284}</p>
+              <p className="text-xs text-slate-500 font-medium">
+                {isDoctor ? 'My Patients' : 'Total Patients'}
+              </p>
+              <p className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                {isDoctor ? (meta?.total ?? patientsList.length) : (meta?.total || 1284)}
+              </p>
             </div>
           </div>
           <p className="text-[11px] text-emerald-600 font-semibold mt-3 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5" /> +12.5% from last month
+            <TrendingUp className="h-3.5 w-3.5" /> {isDoctor ? 'Assigned Clinical Load' : '+12.5% from last month'}
           </p>
         </Card>
 
@@ -238,12 +257,16 @@ export default function PatientsPage() {
               <Heart className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">This Month</p>
-              <p className="text-2xl font-extrabold text-slate-900 mt-0.5">246</p>
+              <p className="text-xs text-slate-500 font-medium">
+                {isDoctor ? 'Department' : 'This Month'}
+              </p>
+              <p className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5 truncate">
+                {isDoctor ? 'Cardiology' : '246'}
+              </p>
             </div>
           </div>
           <p className="text-[11px] text-emerald-600 font-semibold mt-3 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5" /> +8.3% monthly influx
+            <TrendingUp className="h-3.5 w-3.5" /> {isDoctor ? 'Apollo Hospital' : '+8.3% monthly influx'}
           </p>
         </Card>
 
@@ -253,12 +276,16 @@ export default function PatientsPage() {
               <UserCheck className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Active Patients</p>
-              <p className="text-2xl font-extrabold text-slate-900 mt-0.5">1,178</p>
+              <p className="text-xs text-slate-500 font-medium">Active In Care</p>
+              <p className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                {isDoctor
+                  ? (patientsList.filter((p) => p.status === 'Active').length || meta?.total || 1)
+                  : '1,178'}
+              </p>
             </div>
           </div>
           <p className="text-[11px] text-emerald-600 font-semibold mt-3 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5" /> +11.2% in active care
+            <TrendingUp className="h-3.5 w-3.5" /> {isDoctor ? 'Under Regular Monitoring' : '+11.2% in active care'}
           </p>
         </Card>
 
@@ -268,12 +295,16 @@ export default function PatientsPage() {
               <Calendar className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">New This Month</p>
-              <p className="text-2xl font-extrabold text-slate-900 mt-0.5">112</p>
+              <p className="text-xs text-slate-500 font-medium">
+                {isDoctor ? 'Today Rounds' : 'New This Month'}
+              </p>
+              <p className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                {isDoctor ? '1 Scheduled' : '112'}
+              </p>
             </div>
           </div>
           <p className="text-[11px] text-emerald-600 font-semibold mt-3 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5" /> +16.7% vs previous
+            <TrendingUp className="h-3.5 w-3.5" /> {isDoctor ? 'Apollo East Wing' : '+16.7% vs previous'}
           </p>
         </Card>
       </div>
@@ -313,21 +344,28 @@ export default function PatientsPage() {
             </select>
 
             {/* Doctors Filter */}
-            <select
-              value={selectedDoctorId}
-              onChange={(e) => {
-                setSelectedDoctorId(e.target.value);
-                setPage(1);
-              }}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-700 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 max-w-[200px]"
-            >
-              <option value="all">All Doctors</option>
-              {doctorsList.map((doc) => (
-                <option key={doc._id} value={doc._id}>
-                  {doc.name}
-                </option>
-              ))}
-            </select>
+            {isDoctor ? (
+              <div className="h-10 rounded-xl bg-sky-50 border border-sky-200 px-3 flex items-center gap-1.5 text-xs text-sky-800 font-semibold">
+                <Stethoscope className="h-3.5 w-3.5 text-sky-600" />
+                <span>Assigned: {user?.name || 'Dr. S. M. Toha'} (You)</span>
+              </div>
+            ) : (
+              <select
+                value={selectedDoctorId}
+                onChange={(e) => {
+                  setSelectedDoctorId(e.target.value);
+                  setPage(1);
+                }}
+                className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-700 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100 max-w-[200px]"
+              >
+                <option value="all">All Doctors</option>
+                {doctorsList.map((doc) => (
+                  <option key={doc._id} value={doc._id}>
+                    {doc.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             {/* Date Filter */}
             <select

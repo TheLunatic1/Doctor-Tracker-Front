@@ -25,6 +25,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  CheckCircle2,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -84,7 +86,13 @@ export default function DoctorsPage() {
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
 
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const role = user?.role || 'admin';
+  const isPatient = role === 'patient';
+  const isDoctor = role === 'doctor';
+  const isStaff = role === 'staff';
+  const isAdmin = role === 'admin';
+
+  const [patientTab, setPatientTab] = useState<'attending' | 'directory'>('attending');
 
   const [sortField, setSortField] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -131,6 +139,7 @@ export default function DoctorsPage() {
     hospital: hospital === 'All Hospitals' ? undefined : hospital,
     dateFrom,
     sort: sortParam,
+    scope: isPatient && patientTab === 'directory' ? 'all' : undefined,
   });
 
   const handleSort = (field: string) => {
@@ -199,8 +208,231 @@ export default function DoctorsPage() {
   const doctorsList = data?.data || [];
   const meta = data?.meta;
 
+  const attendingDoc =
+    doctorsList.find((d) => d.name === 'Dr. S. M. Toha') ||
+    doctorsList[0] || {
+      _id: 'default_toha',
+      name: 'Dr. S. M. Toha',
+      specialization: 'Cardiology',
+      hospital: 'Apollo Hospital',
+      phone: '+880 1711 998877',
+      email: 'toha.cardio@apollo.com',
+      qualification: 'MBBS, MDs',
+      yearsExperience: 15,
+      rating: 4.9,
+      bio: 'Senior Clinical Cardiologist specializing in interventional cardiology and cardiovascular wellness.',
+      avatar: '/images/doctors/doctor-1.jpg',
+      status: 'Active' as const,
+    };
+
+  // Dedicated "My Doctor" view for patients
+  if (isPatient && patientTab === 'attending') {
+    return (
+      <AppShell
+        title="My Doctor"
+        subtitle="Personal Attending Physician & Direct Healthcare Specialist"
+      >
+        <div className="space-y-6">
+          {/* Tab Switcher */}
+          <div className="flex items-center justify-between flex-wrap gap-3 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+              <button
+                onClick={() => setPatientTab('attending')}
+                className="px-4 py-2 rounded-lg text-xs font-semibold bg-white text-sky-700 shadow-sm transition-all"
+              >
+                My Attending Physician
+              </button>
+              <button
+                onClick={() => setPatientTab('directory')}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition-all"
+              >
+                Browse Hospital Specialists
+              </button>
+            </div>
+            <Badge variant="blue" className="text-xs">
+              Assigned Specialist: {attendingDoc.name}
+            </Badge>
+          </div>
+
+          {/* Attending Doctor Hero Profile Card */}
+          <Card className="overflow-hidden border-slate-100 shadow-sm">
+            <div className="bg-gradient-to-r from-sky-600 via-sky-700 to-indigo-800 p-6 sm:p-8 text-white">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                  <div className="relative">
+                    <Image
+                      src={attendingDoc.avatar || '/images/doctors/doctor-1.jpg'}
+                      alt={attendingDoc.name}
+                      width={96}
+                      height={96}
+                      className="h-24 w-24 rounded-3xl object-cover ring-4 ring-white/30 shadow-xl"
+                    />
+                    <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-emerald-400 ring-2 ring-white" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold backdrop-blur-sm">
+                        <Stethoscope className="h-3 w-3" />
+                        Assigned Attending Doctor
+                      </span>
+                      <Badge className="bg-emerald-500/20 text-emerald-200 border-emerald-400/30 text-xs">
+                        Active On-Duty
+                      </Badge>
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                      {attendingDoc.name}
+                    </h1>
+                    <p className="text-xs sm:text-sm text-sky-100 flex items-center gap-2 flex-wrap">
+                      <span>{attendingDoc.qualification || 'MBBS, MDs'}</span>
+                      <span>•</span>
+                      <span>Department of {attendingDoc.specialization || 'Cardiology'}</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Building2 className="h-3.5 w-3.5" />
+                        {attendingDoc.hospital || 'Apollo Hospital'}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="bg-white text-sky-700 hover:bg-sky-50 shadow-sm font-semibold text-xs rounded-xl h-10 px-4"
+                  >
+                    <a href={`tel:${attendingDoc.phone}`}>
+                      <Phone className="h-4 w-4 mr-1.5" />
+                      Call Clinic ({attendingDoc.phone})
+                    </a>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="bg-white/10 hover:bg-white/20 text-white border-white/20 font-semibold text-xs rounded-xl h-10 px-4"
+                  >
+                    <a href={`mailto:${attendingDoc.email}`}>
+                      <Mail className="h-4 w-4 mr-1.5" />
+                      Send Email
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 bg-slate-50/70 border-b border-slate-100 text-xs">
+              <div className="p-4 text-center">
+                <p className="text-slate-400 font-medium">Clinical Experience</p>
+                <p className="text-base font-bold text-slate-800 mt-0.5">{attendingDoc.yearsExperience || 15} Years</p>
+              </div>
+              <div className="p-4 text-center">
+                <p className="text-slate-400 font-medium">Patient Satisfaction</p>
+                <p className="text-base font-bold text-slate-800 mt-0.5 flex items-center justify-center gap-1">
+                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  {attendingDoc.rating || 4.9} / 5.0
+                </p>
+              </div>
+              <div className="p-4 text-center">
+                <p className="text-slate-400 font-medium">Clinic Room</p>
+                <p className="text-base font-bold text-slate-800 mt-0.5">Room 402, Block B</p>
+              </div>
+              <div className="p-4 text-center">
+                <p className="text-slate-400 font-medium">Visiting Hours</p>
+                <p className="text-base font-bold text-slate-800 mt-0.5">Sun-Thu 10AM-4PM</p>
+              </div>
+            </div>
+
+            {/* Details Content */}
+            <div className="p-6 md:p-8 space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-sm font-bold text-slate-900">Physician Biography & Care Philosophy</h2>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  {attendingDoc.bio ||
+                    'Senior Clinical Cardiologist dedicated to interventional cardiovascular wellness, routine hypertension observation, and personalized clinical recovery.'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sky-800 font-semibold text-xs">
+                    <CheckCircle2 className="h-4 w-4 text-sky-600" />
+                    Your Care Coordination
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    You are registered under {attendingDoc.name}&apos;s clinical service. Inpatient rounds occur daily at 09:00 AM. Routine follow-ups can be scheduled through clinic reception.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-800 font-semibold text-xs">
+                    <Clock className="h-4 w-4 text-emerald-600" />
+                    Emergency Direct Line
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    For critical cardiovascular symptoms or emergency admission coordination, contact Apollo Emergency Desk: <strong>+880 1711 998877</strong> or extension 402.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100 flex-wrap gap-3">
+                <Button asChild variant="primary" className="rounded-xl text-xs gap-2">
+                  <Link href="/dashboard">
+                    <ArrowRight className="h-3.5 w-3.5" />
+                    View My Complete Care Summary
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setPatientTab('directory')}
+                  className="rounded-xl text-xs text-slate-600"
+                >
+                  Browse Other Hospital Specialists →
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </AppShell>
+    );
+  }
+
+  const pageTitle = isPatient
+    ? 'Hospital Specialist Directory'
+    : isDoctor
+    ? 'Physicians Directory'
+    : isStaff
+    ? 'On-Duty Doctors'
+    : 'Doctors';
+
+  const pageSubtitle = isPatient
+    ? 'Explore department specialists across the Apollo Hospital network'
+    : isDoctor
+    ? 'Hospital Medical Staff & Specialist Colleague Network'
+    : isStaff
+    ? 'Active Hospital Medical Staff & Duty Roster'
+    : 'Manage and view all registered doctors in the system.';
+
   return (
-    <AppShell title="Doctors" subtitle="Manage and view all registered doctors in the system.">
+    <AppShell title={pageTitle} subtitle={pageSubtitle}>
+      {/* Banner if patient is viewing directory */}
+      {isPatient && (
+        <div className="rounded-2xl bg-sky-50 border border-sky-200 p-4 mb-4 flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <p className="text-xs font-bold text-sky-900">Browsing Hospital Specialist Directory</p>
+            <p className="text-xs text-sky-700">Looking for other specialties or a second opinion across the network.</p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPatientTab('attending')}
+            className="text-xs font-semibold bg-white shadow-sm"
+          >
+            ← Return to My Doctor
+          </Button>
+        </div>
+      )}
+
       {/* Page Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
@@ -208,8 +440,8 @@ export default function DoctorsPage() {
             <Stethoscope className="h-6 w-6 stroke-[2.2]" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Doctors</h2>
-            <p className="text-xs text-slate-500">Manage and view all registered doctors in the system.</p>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">{pageTitle}</h2>
+            <p className="text-xs text-slate-500">{pageSubtitle}</p>
           </div>
         </div>
 
@@ -236,12 +468,14 @@ export default function DoctorsPage() {
               <UserCheck className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Total Doctors</p>
+              <p className="text-xs text-slate-500 font-medium">
+                {isDoctor ? 'Total Physicians' : 'Total Doctors'}
+              </p>
               <p className="text-2xl font-extrabold text-slate-900 mt-0.5">{meta?.total || 48}</p>
             </div>
           </div>
           <p className="text-[11px] text-emerald-600 font-semibold mt-3 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5" /> +8.2% from last month
+            <TrendingUp className="h-3.5 w-3.5" /> {isDoctor ? 'Hospital Wide Faculty' : '+8.2% from last month'}
           </p>
         </Card>
 
@@ -268,12 +502,16 @@ export default function DoctorsPage() {
               <Building2 className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">This Month</p>
-              <p className="text-2xl font-extrabold text-slate-900 mt-0.5">12</p>
+              <p className="text-xs text-slate-500 font-medium">
+                {isDoctor ? 'Department Specialists' : 'This Month'}
+              </p>
+              <p className="text-2xl font-extrabold text-slate-900 mt-0.5">
+                {isDoctor ? 'Cardiology' : '12'}
+              </p>
             </div>
           </div>
           <p className="text-[11px] text-emerald-600 font-semibold mt-3 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5" /> +20.0% new onboards
+            <TrendingUp className="h-3.5 w-3.5" /> {isDoctor ? 'Specialist Faculty' : '+20.0% new onboards'}
           </p>
         </Card>
 
@@ -283,11 +521,17 @@ export default function DoctorsPage() {
               <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-slate-500 font-medium">Top Hospital</p>
-              <p className="text-sm font-bold text-slate-900 truncate mt-0.5">City Health Hospital ★</p>
+              <p className="text-xs text-slate-500 font-medium">
+                {isDoctor ? 'Affiliation' : 'Top Hospital'}
+              </p>
+              <p className="text-sm font-bold text-slate-900 truncate mt-0.5">
+                {isDoctor ? 'Apollo Hospital' : 'City Health Hospital ★'}
+              </p>
             </div>
           </div>
-          <p className="text-[11px] text-slate-500 font-medium mt-3">Highest patient rating</p>
+          <p className="text-[11px] text-slate-500 font-medium mt-3">
+            {isDoctor ? 'Primary Medical Campus' : 'Highest patient rating'}
+          </p>
         </Card>
       </div>
 
@@ -510,91 +754,102 @@ export default function DoctorsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {doctorsList.map((doc, idx) => (
-                      <tr
-                        key={doc._id}
-                        onClick={() => setSelectedDoctor(doc)}
-                        className={cn(
-                          'hover:bg-sky-50/40 cursor-pointer transition-colors',
-                          selectedDoctor?._id === doc._id ? 'bg-sky-50/80 font-medium' : ''
-                        )}
-                      >
-                        <td className="py-3.5 px-4 text-slate-400 font-medium">
-                          {(page - 1) * 8 + idx + 1}
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-3">
-                            {doc.avatar ? (
-                              <Image
-                                src={doc.avatar}
-                                alt={doc.name}
-                                width={36}
-                                height={36}
-                                className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-sky-200"
-                                unoptimized={doc.avatar.startsWith('data:')}
-                              />
-                            ) : (
-                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">
-                                {doc.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
+                    {doctorsList.map((doc, idx) => {
+                      const isSelf = user?.email === doc.email || user?.name === doc.name;
+                      return (
+                        <tr
+                          key={doc._id}
+                          onClick={() => setSelectedDoctor(doc)}
+                          className={cn(
+                            'hover:bg-sky-50/40 cursor-pointer transition-colors',
+                            selectedDoctor?._id === doc._id ? 'bg-sky-50/80 font-medium' : '',
+                            isDoctor && isSelf ? 'bg-sky-50/50' : ''
+                          )}
+                        >
+                          <td className="py-3.5 px-4 text-slate-400 font-medium">
+                            {(page - 1) * 8 + idx + 1}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-3">
+                              {doc.avatar ? (
+                                <Image
+                                  src={doc.avatar}
+                                  alt={doc.name}
+                                  width={36}
+                                  height={36}
+                                  className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-sky-200"
+                                  unoptimized={doc.avatar.startsWith('data:')}
+                                />
+                              ) : (
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">
+                                  {doc.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <p className="font-semibold text-slate-900 truncate">{doc.name}</p>
+                                  {isDoctor && isSelf && (
+                                    <Badge variant="blue" className="text-[10px] py-0 px-1.5 font-bold">
+                                      You
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-[11px] text-slate-400 truncate">{doc.qualification || 'MBBS, MD'}</p>
                               </div>
-                            )}
-                            <div className="min-w-0">
-                              <p className="font-semibold text-slate-900 truncate">{doc.name}</p>
-                              <p className="text-[11px] text-slate-400 truncate">{doc.qualification || 'MBBS, MD'}</p>
                             </div>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4">{getSpecialtyBadge(doc.specialization)}</td>
-                        <td className="py-3.5 px-4 text-slate-600">{doc.hospital}</td>
-                        <td className="py-3.5 px-4 text-slate-600 hidden sm:table-cell">{doc.phone}</td>
-                        <td className="py-3.5 px-4 text-slate-500 hidden md:table-cell">{doc.email}</td>
-                        <td className="py-3.5 px-4">
-                          <span className="font-bold text-slate-900 text-sm">
-                            {doc.patientCount ?? 0}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            {doc.status}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Button asChild variant="ghost" size="sm" className="h-8 w-8 p-0" title="View details">
-                              <Link href={`/doctors/${doc._id}`}>
-                                <Eye className="h-4 w-4 text-slate-500 hover:text-sky-600" />
-                              </Link>
-                            </Button>
-                            {(isAdmin || user?.email === doc.email) && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                title="Edit profile"
-                                onClick={() => {
-                                  setDoctorToEdit(doc);
-                                  setIsCreateOpen(true);
-                                }}
-                              >
-                                <Edit2 className="h-4 w-4 text-slate-500 hover:text-sky-600" />
+                          </td>
+                          <td className="py-3.5 px-4">{getSpecialtyBadge(doc.specialization)}</td>
+                          <td className="py-3.5 px-4 text-slate-600">{doc.hospital}</td>
+                          <td className="py-3.5 px-4 text-slate-600 hidden sm:table-cell">{doc.phone}</td>
+                          <td className="py-3.5 px-4 text-slate-500 hidden md:table-cell">{doc.email}</td>
+                          <td className="py-3.5 px-4">
+                            <span className="font-bold text-slate-900 text-sm">
+                              {doc.patientCount ?? 0}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              {doc.status}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button asChild variant="ghost" size="sm" className="h-8 w-8 p-0" title="View details">
+                                <Link href={`/doctors/${doc._id}`}>
+                                  <Eye className="h-4 w-4 text-slate-500 hover:text-sky-600" />
+                                </Link>
                               </Button>
-                            )}
-                            {isAdmin && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600"
-                                title="Delete doctor"
-                                onClick={() => setDoctorToDelete(doc)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              {(isAdmin || (isDoctor && isSelf)) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  title="Edit profile"
+                                  onClick={() => {
+                                    setDoctorToEdit(doc);
+                                    setIsCreateOpen(true);
+                                  }}
+                                >
+                                  <Edit2 className="h-4 w-4 text-slate-500 hover:text-sky-600" />
+                                </Button>
+                              )}
+                              {isAdmin && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600"
+                                  title="Delete doctor"
+                                  onClick={() => setDoctorToDelete(doc)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

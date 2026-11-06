@@ -4,6 +4,8 @@ export interface User {
   email: string;
   role: 'admin' | 'doctor' | 'staff' | 'patient';
   createdAt: string;
+  doctorProfile?: Doctor;
+  patientProfile?: Patient;
 }
 
 export interface Doctor {

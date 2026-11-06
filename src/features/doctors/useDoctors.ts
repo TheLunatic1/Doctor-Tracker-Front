@@ -13,6 +13,7 @@ export interface DoctorFilters {
   dateFrom?: string;
   dateTo?: string;
   sort?: string;
+  scope?: string;
 }
 
 export function useDoctors(filters: DoctorFilters = {}) {
@@ -35,6 +36,7 @@ export function useDoctors(filters: DoctorFilters = {}) {
       if (filters.dateFrom) params.set('dateFrom', filters.dateFrom);
       if (filters.dateTo) params.set('dateTo', filters.dateTo);
       if (filters.sort) params.set('sort', filters.sort);
+      if (filters.scope) params.set('scope', filters.scope);
 
       const res = await api.get<ApiResponse<Doctor[]>>(`/doctors?${params.toString()}`);
       return res.data;
