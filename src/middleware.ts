@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 const AUTH_COOKIE = 'dt_auth_token';
 
 // Protected path prefixes
-const PROTECTED_ROUTES = ['/dashboard', '/doctors', '/patients'];
+const PROTECTED_ROUTES = ['/dashboard', '/doctors', '/patients', '/analytics', '/profile'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -29,5 +29,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/doctors/:path*', '/patients/:path*', '/login'],
+  matcher: ['/dashboard/:path*', '/doctors/:path*', '/patients/:path*', '/analytics/:path*', '/profile/:path*', '/login'],
 };

@@ -7,6 +7,11 @@ import { AuthProvider } from '@/features/auth/AuthContext';
 export const metadata: Metadata = {
   title: 'Doctor Tracker - Modern Healthcare Administration',
   description: 'Manage Doctors, Patients & Analytics in One Powerful Platform',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

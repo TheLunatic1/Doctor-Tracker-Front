@@ -7,6 +7,8 @@ import {
   LayoutDashboard,
   Stethoscope,
   Users,
+  BarChart3,
+  User,
   LogOut,
   Activity,
   X,
@@ -40,6 +42,18 @@ export default function Sidebar({ onClose }: SidebarProps) {
       href: '/patients',
       icon: Users,
       active: pathname.startsWith('/patients'),
+    },
+    {
+      title: 'Analytics',
+      href: '/analytics',
+      icon: BarChart3,
+      active: pathname === '/analytics',
+    },
+    {
+      title: 'Profile & Settings',
+      href: '/profile',
+      icon: User,
+      active: pathname === '/profile',
     },
   ];
 

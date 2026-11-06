@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Activity, Mail, Lock, Eye, EyeOff, LogIn, TrendingUp, Users, ShieldCheck, Sparkles } from 'lucide-react';
+import { Activity, Mail, Lock, Eye, EyeOff, LogIn, TrendingUp, Users, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const { login, isLoading } = useAuth();
@@ -45,7 +45,7 @@ export default function LoginPage() {
         {/* Main Pitch */}
         <div className="max-w-md space-y-6 relative z-10">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-sky-200 backdrop-blur-sm border border-white/10">
-            <Sparkles className="h-3.5 w-3.5 text-sky-300" />
+            <ShieldCheck className="h-3.5 w-3.5 text-sky-300" />
             Healthcare Administration Platform
           </div>
 

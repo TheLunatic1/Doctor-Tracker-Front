@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Trophy, ArrowRight } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -63,9 +64,19 @@ export default function TopDoctorsWidget() {
                     {idx + 1}
                   </div>
 
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">
-                    {doc.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
-                  </div>
+                  {doc.avatar ? (
+                    <Image
+                      src={doc.avatar}
+                      alt={doc.name}
+                      width={36}
+                      height={36}
+                      className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-sky-200"
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">
+                      {doc.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
 
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-slate-900 truncate group-hover:text-sky-600 transition-colors">

@@ -2,6 +2,7 @@
 
 import React, { useState, use } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import AppShell from '@/components/layout/AppShell';
 import {
   ArrowLeft,
@@ -130,9 +131,19 @@ export default function DoctorDetailPage({ params }: PageProps) {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <div className="relative">
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-black text-3xl shadow-xl shadow-sky-500/20 ring-4 ring-white">
-                {doctor.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
-              </div>
+              {doctor.avatar ? (
+                <Image
+                  src={doctor.avatar}
+                  alt={doctor.name}
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 shrink-0 rounded-3xl object-cover shadow-xl shadow-sky-500/20 ring-4 ring-white"
+                />
+              ) : (
+                <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-black text-3xl shadow-xl shadow-sky-500/20 ring-4 ring-white">
+                  {doctor.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
+                </div>
+              )}
               <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white ring-2 ring-white">
                 <CheckCircle2 className="h-4 w-4" />
               </span>

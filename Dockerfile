@@ -8,8 +8,10 @@ RUN npm ci
 
 COPY tsconfig.json next.config.mjs postcss.config.mjs tailwind.config.ts ./
 COPY src ./src
+COPY public ./public
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV BACKEND_INTERNAL_URL=http://doctor-tracker-backend:5000
 RUN npm run build
 
 # Runner stage
@@ -26,6 +28,7 @@ RUN npm ci --omit=dev
 
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/src ./src
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.mjs ./
 
 EXPOSE 3000

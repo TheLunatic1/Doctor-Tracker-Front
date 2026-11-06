@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Activity,
@@ -8,21 +8,66 @@ import {
   ShieldCheck,
   Stethoscope,
   BarChart3,
-  Sparkles,
+  TrendingUp,
   Zap,
   CheckCircle2,
   Lock,
+  Database,
+  Server,
+  Layers,
+  Cpu,
+  Globe2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/AuthContext';
 
 export default function LandingPage() {
   const { isAuthenticated } = useAuth();
+  const [activeSection, setActiveSection] = useState<'home' | 'features' | 'about' | 'architecture'>('home');
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const featuresEl = document.getElementById('features');
+      const aboutEl = document.getElementById('about');
+      const archEl = document.getElementById('architecture');
+
+      const archTop = archEl ? archEl.offsetTop - 120 : Infinity;
+      const aboutTop = aboutEl ? aboutEl.offsetTop - 120 : Infinity;
+      const featuresTop = featuresEl ? featuresEl.offsetTop - 120 : Infinity;
+
+      if (scrollY >= archTop) {
+        setActiveSection('architecture');
+      } else if (scrollY >= aboutTop) {
+        setActiveSection('about');
+      } else if (scrollY >= featuresTop) {
+        setActiveSection('features');
+      } else {
+        setActiveSection('home');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string, section: 'home' | 'features' | 'about' | 'architecture') => {
+    e.preventDefault();
+    setActiveSection(section);
+    if (id === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-sky-500 selection:text-white">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-white/80 backdrop-blur-md">
+      <header className="sticky top-0 z-40 w-full border-b border-slate-100 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/20">
@@ -33,17 +78,50 @@ export default function LandingPage() {
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-            <Link href="/" className="text-sky-600 font-semibold transition-colors">
+          {/* Active Navigation Bar with Dynamic Color Indicator */}
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+            <a
+              href="#home"
+              onClick={(e) => scrollToSection(e, 'home', 'home')}
+              className={`transition-all py-1 border-b-2 ${
+                activeSection === 'home'
+                  ? 'text-sky-600 font-bold border-sky-600'
+                  : 'text-slate-600 border-transparent hover:text-slate-900 hover:border-slate-300'
+              }`}
+            >
               Home
-            </Link>
-            <a href="#features" className="hover:text-slate-900 transition-colors">
+            </a>
+            <a
+              href="#features"
+              onClick={(e) => scrollToSection(e, 'features', 'features')}
+              className={`transition-all py-1 border-b-2 ${
+                activeSection === 'features'
+                  ? 'text-sky-600 font-bold border-sky-600'
+                  : 'text-slate-600 border-transparent hover:text-slate-900 hover:border-slate-300'
+              }`}
+            >
               Features
             </a>
-            <a href="#about" className="hover:text-slate-900 transition-colors">
+            <a
+              href="#about"
+              onClick={(e) => scrollToSection(e, 'about', 'about')}
+              className={`transition-all py-1 border-b-2 ${
+                activeSection === 'about'
+                  ? 'text-sky-600 font-bold border-sky-600'
+                  : 'text-slate-600 border-transparent hover:text-slate-900 hover:border-slate-300'
+              }`}
+            >
               About
             </a>
-            <a href="#tech" className="hover:text-slate-900 transition-colors">
+            <a
+              href="#architecture"
+              onClick={(e) => scrollToSection(e, 'architecture', 'architecture')}
+              className={`transition-all py-1 border-b-2 ${
+                activeSection === 'architecture'
+                  ? 'text-sky-600 font-bold border-sky-600'
+                  : 'text-slate-600 border-transparent hover:text-slate-900 hover:border-slate-300'
+              }`}
+            >
               Architecture
             </a>
           </nav>
@@ -69,14 +147,14 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-24 lg:pt-20 lg:pb-32 bg-gradient-to-b from-sky-50/50 via-white to-slate-50">
+      <section id="home" className="relative overflow-hidden pt-12 pb-24 lg:pt-20 lg:pb-32 bg-gradient-to-b from-sky-50/50 via-white to-slate-50">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Hero Content */}
             <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 rounded-full bg-sky-100/70 px-4 py-1.5 text-xs font-semibold text-sky-800 border border-sky-200">
                 <span className="flex h-2 w-2 rounded-full bg-sky-600 animate-pulse" />
-                Smart Healthcare Management
+                Enterprise Healthcare Platform
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-950 leading-[1.12]">
@@ -84,17 +162,17 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-2xl sm:text-3xl font-bold text-slate-800">
-                Manage Doctors, Patients & Analytics in One Powerful Platform
+                Manage Doctors, Patients & Analytics in One Unified System
               </p>
 
               <p className="text-base sm:text-lg text-slate-600 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                A modern and secure admin dashboard to monitor doctors, keep patient records organized, and visualize healthcare metrics with ease.
+                A high-performance clinical management dashboard designed for hospital administrators to track physician workloads, monitor patient care journeys, and analyze real-time hospital operations.
               </p>
 
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4">
                 <Button asChild variant="primary" size="lg" className="rounded-2xl px-8 shadow-lg shadow-sky-600/20 text-base">
                   <Link href="/login">
-                    Get Started
+                    Access Portal
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -126,7 +204,7 @@ export default function LandingPage() {
                     <div className="h-3 w-3 rounded-full bg-rose-400" />
                     <div className="h-3 w-3 rounded-full bg-amber-400" />
                     <div className="h-3 w-3 rounded-full bg-emerald-400" />
-                    <span className="ml-2 text-xs font-semibold text-slate-400">CareTrack Admin Portal</span>
+                    <span className="ml-2 text-xs font-semibold text-slate-400">CareTrack Command Center</span>
                   </div>
                   <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
                     Live System
@@ -137,23 +215,23 @@ export default function LandingPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4">
                   <div className="rounded-xl bg-sky-50/70 p-3 border border-sky-100">
                     <p className="text-[11px] text-sky-700 font-medium">Total Doctors</p>
-                    <p className="text-xl font-bold text-sky-950 mt-1">48</p>
-                    <span className="text-[10px] text-emerald-600 font-semibold">↑ +8.2%</span>
+                    <p className="text-xl font-bold text-sky-950 mt-1">49</p>
+                    <span className="text-[10px] text-emerald-600 font-semibold">+8.2%</span>
                   </div>
                   <div className="rounded-xl bg-teal-50/70 p-3 border border-teal-100">
                     <p className="text-[11px] text-teal-700 font-medium">Total Patients</p>
-                    <p className="text-xl font-bold text-teal-950 mt-1">1,284</p>
-                    <span className="text-[10px] text-emerald-600 font-semibold">↑ +12.5%</span>
+                    <p className="text-xl font-bold text-teal-950 mt-1">549</p>
+                    <span className="text-[10px] text-emerald-600 font-semibold">+12.5%</span>
                   </div>
                   <div className="rounded-xl bg-indigo-50/70 p-3 border border-indigo-100">
-                    <p className="text-[11px] text-indigo-700 font-medium">Monthly Active</p>
-                    <p className="text-xl font-bold text-indigo-950 mt-1">246</p>
-                    <span className="text-[10px] text-emerald-600 font-semibold">↑ +6.4%</span>
+                    <p className="text-[11px] text-indigo-700 font-medium">Active Patients</p>
+                    <p className="text-xl font-bold text-indigo-950 mt-1">325</p>
+                    <span className="text-[10px] text-emerald-600 font-semibold">+6.4%</span>
                   </div>
                   <div className="rounded-xl bg-amber-50/70 p-3 border border-amber-100">
                     <p className="text-[11px] text-amber-700 font-medium">Hospitals</p>
-                    <p className="text-xl font-bold text-amber-950 mt-1">12</p>
-                    <span className="text-[10px] text-emerald-600 font-semibold">↑ +2.1%</span>
+                    <p className="text-xl font-bold text-amber-950 mt-1">10</p>
+                    <span className="text-[10px] text-emerald-600 font-semibold">+2.1%</span>
                   </div>
                 </div>
 
@@ -161,11 +239,11 @@ export default function LandingPage() {
                 <div className="rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-xs font-semibold text-slate-300">Patient Registrations Over Time</p>
-                      <p className="text-[11px] text-slate-400">Monthly breakdown with continuous zero-fill</p>
+                      <p className="text-xs font-semibold text-slate-300">Patient Admissions Timeline</p>
+                      <p className="text-[11px] text-slate-400">Continuous zero-filled admissions series</p>
                     </div>
                     <span className="text-xs rounded-lg bg-white/10 px-2 py-1 text-sky-300 font-medium">
-                      +18.6% Growth
+                      +18.6% Trend
                     </span>
                   </div>
                   <div className="h-32 flex items-end gap-2 pt-4 px-2">
@@ -186,8 +264,16 @@ export default function LandingPage() {
       </section>
 
       {/* Feature Highlights Grid */}
-      <section id="features" className="py-20 bg-white border-y border-slate-100">
+      <section id="features" className="py-24 bg-white border-y border-slate-100">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full bg-sky-100 px-3.5 py-1 text-xs font-semibold text-sky-800">
+              Core Capabilities
+            </div>
+            <h2 className="text-3xl font-extrabold text-slate-900">Built for Hospital Administrators</h2>
+            <p className="text-sm text-slate-600">Enterprise healthcare operations require high data reliability, zero latency, and intuitive clinical workflows.</p>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 mb-4">
@@ -221,7 +307,7 @@ export default function LandingPage() {
 
             <div className="rounded-2xl border border-slate-100 bg-slate-50/60 p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 mb-4">
-                <Sparkles className="h-6 w-6" />
+                <TrendingUp className="h-6 w-6" />
               </div>
               <h3 className="text-base font-bold text-slate-900">Modern UI/UX</h3>
               <p className="mt-2 text-xs text-slate-600 leading-relaxed">
@@ -316,8 +402,71 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Architecture Section (Populated & Interactive) */}
+      <section id="architecture" className="py-24 bg-white border-t border-slate-200">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3.5 py-1 text-xs font-semibold text-blue-800">
+              System Architecture
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
+              Engineered for Security, Scale & Speed
+            </h2>
+            <p className="text-sm text-slate-600">
+              Doctor Tracker separates client and server applications with first-party proxy rewrites, compound index execution plans, and containerized deployment.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 space-y-4 hover:border-sky-300 transition-colors">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                <Globe2 className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Next.js App Router</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Next.js 15 with React 19 handles server-side rendering, Edge route protection via middleware.ts, and TanStack Query state hydration.
+              </p>
+              <div className="pt-2 text-[11px] font-semibold text-sky-700">Client Layer</div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 space-y-4 hover:border-blue-300 transition-colors">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                <Lock className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">First-Party JWT Proxy</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                API requests rewrite through Next.js proxy to the Express backend. Cookies remain strictly first-party httpOnly, eliminating XSS and third-party cookie restrictions.
+              </p>
+              <div className="pt-2 text-[11px] font-semibold text-blue-700">Security Layer</div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 space-y-4 hover:border-emerald-300 transition-colors">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                <Server className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Express.js REST API</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Node.js Express backend with Zod schema validation, Helmet security headers, rate limiting, and cascade conflict deletion logic.
+              </p>
+              <div className="pt-2 text-[11px] font-semibold text-emerald-700">Service Layer</div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-6 space-y-4 hover:border-amber-300 transition-colors">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                <Database className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">MongoDB Aggregations</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Compound indexed schemas achieving 100% IXSCAN execution plans. Single-pass $facet analytics with continuous zero-filling for time gaps.
+              </p>
+              <div className="pt-2 text-[11px] font-semibold text-amber-700">Persistence Layer</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-12">
+      <footer className="border-t border-slate-200 bg-slate-50 py-12">
         <div className="mx-auto max-w-7xl px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-600 text-white">

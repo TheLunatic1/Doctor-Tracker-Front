@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import AppShell from '@/components/layout/AppShell';
 import {
   Stethoscope,
@@ -394,9 +395,19 @@ export default function DoctorsPage() {
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">
-                              {doc.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
-                            </div>
+                            {doc.avatar ? (
+                              <Image
+                                src={doc.avatar}
+                                alt={doc.name}
+                                width={36}
+                                height={36}
+                                className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-sky-200"
+                              />
+                            ) : (
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">
+                                {doc.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
+                              </div>
+                            )}
                             <div className="min-w-0">
                               <p className="font-semibold text-slate-900 truncate">{doc.name}</p>
                               <p className="text-[11px] text-slate-400 truncate">{doc.qualification || 'MBBS, MD'}</p>
@@ -467,9 +478,19 @@ export default function DoctorsPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-sm ring-2 ring-sky-200">
-                          {doc.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
-                        </div>
+                        {doc.avatar ? (
+                          <Image
+                            src={doc.avatar}
+                            alt={doc.name}
+                            width={44}
+                            height={44}
+                            className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-sky-200"
+                          />
+                        ) : (
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-sm ring-2 ring-sky-200">
+                            {doc.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <p className="font-bold text-slate-900 text-sm">{doc.name}</p>
                           <p className="text-xs text-slate-400">{doc.qualification || 'MBBS, MD'}</p>
@@ -521,9 +542,19 @@ export default function DoctorsPage() {
               </div>
 
               <div className="text-center space-y-2">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-extrabold text-2xl shadow-lg shadow-sky-500/20 ring-4 ring-sky-50">
-                  {selectedDoctor.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
-                </div>
+                {selectedDoctor.avatar ? (
+                  <Image
+                    src={selectedDoctor.avatar}
+                    alt={selectedDoctor.name}
+                    width={80}
+                    height={80}
+                    className="mx-auto h-20 w-20 rounded-full object-cover shadow-lg shadow-sky-500/20 ring-4 ring-sky-50"
+                  />
+                ) : (
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-extrabold text-2xl shadow-lg shadow-sky-500/20 ring-4 ring-sky-50">
+                    {selectedDoctor.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
+                  </div>
+                )}
                 <h3 className="text-lg font-bold text-slate-900">{selectedDoctor.name}</h3>
                 <p className="text-xs text-sky-700 font-semibold">{selectedDoctor.specialization}</p>
                 <p className="text-xs text-slate-400">{selectedDoctor.qualification}</p>
