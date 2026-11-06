@@ -17,6 +17,9 @@ import {
   LayoutGrid,
   List as ListIcon,
   Phone,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,6 +65,22 @@ export default function PatientsPage() {
 
   const debouncedSearch = useDebounce(searchInput, 350);
 
+  const [sortField, setSortField] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  let sortParam = 'newest';
+  if (sortField === 'createdAt') {
+    sortParam = sortOrder === 'asc' ? 'oldest' : 'newest';
+  } else if (sortField === 'name') {
+    sortParam = sortOrder === 'asc' ? 'name_asc' : 'name_desc';
+  } else if (sortField === 'age') {
+    sortParam = sortOrder === 'asc' ? 'age_asc' : 'age_desc';
+  } else if (sortField === 'condition') {
+    sortParam = sortOrder === 'asc' ? 'condition_asc' : 'condition_desc';
+  } else if (sortField === 'status') {
+    sortParam = sortOrder === 'asc' ? 'status_asc' : 'status_desc';
+  }
+
   // Fetch doctors for filter dropdown
   const { data: doctorsData } = useDoctors({ limit: 100 });
   const doctorsList = doctorsData?.data || [];
@@ -84,7 +103,31 @@ export default function PatientsPage() {
     condition: condition === 'All Conditions' ? undefined : condition,
     doctorId: selectedDoctorId === 'all' ? undefined : selectedDoctorId,
     dateFrom,
+    sort: sortParam,
   });
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortOrder(field === 'createdAt' ? 'desc' : 'asc');
+    }
+    setPage(1);
+  };
+
+  const renderSortIcon = (field: string) => {
+    if (sortField !== field) {
+      return (
+        <ArrowUpDown className="h-3 w-3 text-slate-300 opacity-60 group-hover:opacity-100 group-hover:text-slate-500 transition-all shrink-0" />
+      );
+    }
+    return sortOrder === 'asc' ? (
+      <ArrowUp className="h-3 w-3 text-sky-600 font-bold shrink-0 animate-in fade-in" />
+    ) : (
+      <ArrowDown className="h-3 w-3 text-sky-600 font-bold shrink-0 animate-in fade-in" />
+    );
+  };
 
   const deleteMutation = useDeletePatient();
 
@@ -352,14 +395,59 @@ export default function PatientsPage() {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50/80 border-b border-slate-100 text-slate-500 uppercase tracking-wider font-semibold">
                 <tr>
-                  <th className="py-3 px-4">#</th>
-                  <th className="py-3 px-4">Patient</th>
-                  <th className="py-3 px-4">Age</th>
+                  <th
+                    onClick={() => handleSort('createdAt')}
+                    className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
+                    title="Click to sort by date / ID"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>#</span>
+                      {renderSortIcon('createdAt')}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort('name')}
+                    className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
+                    title="Click to sort by patient name"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>Patient</span>
+                      {renderSortIcon('name')}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort('age')}
+                    className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
+                    title="Click to sort by patient age"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>Age</span>
+                      {renderSortIcon('age')}
+                    </div>
+                  </th>
                   <th className="py-3 px-4">Gender</th>
-                  <th className="py-3 px-4">Condition</th>
+                  <th
+                    onClick={() => handleSort('condition')}
+                    className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
+                    title="Click to sort by condition"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>Condition</span>
+                      {renderSortIcon('condition')}
+                    </div>
+                  </th>
                   <th className="py-3 px-4">Assigned Doctor</th>
                   <th className="py-3 px-4 hidden sm:table-cell">Registered On</th>
-                  <th className="py-3 px-4">Status</th>
+                  <th
+                    onClick={() => handleSort('status')}
+                    className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors group"
+                    title="Click to sort by status"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>Status</span>
+                      {renderSortIcon('status')}
+                    </div>
+                  </th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>

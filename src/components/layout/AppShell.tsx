@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { cn } from '@/lib/utils';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -12,12 +13,59 @@ interface AppShellProps {
 
 export default function AppShell({ children, title, subtitle }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('doctor_tracker_sidebar_collapsed');
+      if (saved !== null) {
+        setIsCollapsed(saved === 'true');
+      }
+    } catch {
+      // ignore in environments without localStorage
+    }
+  }, []);
+
+  const toggleCollapse = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('doctor_tracker_sidebar_collapsed', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50/70">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex md:shrink-0">
-        <Sidebar />
+      {/* Desktop Sidebar Rail with Hover Expansion */}
+      <div
+        className={cn(
+          'hidden md:block shrink-0 transition-all duration-300 ease-in-out relative z-30',
+          isCollapsed ? 'w-20' : 'w-64'
+        )}
+      >
+        <div
+          className={cn(
+            'fixed top-0 bottom-0 left-0 transition-all duration-300 ease-in-out z-40 flex flex-col',
+            isCollapsed
+              ? isHovered
+                ? 'w-64 shadow-2xl shadow-slate-950/50 ring-1 ring-slate-800'
+                : 'w-20'
+              : 'w-64'
+          )}
+          onMouseEnter={() => isCollapsed && setIsHovered(true)}
+          onMouseLeave={() => isCollapsed && setIsHovered(false)}
+        >
+          <Sidebar
+            isCollapsed={isCollapsed}
+            isHovered={isHovered}
+            onToggleCollapse={toggleCollapse}
+          />
+        </div>
       </div>
 
       {/* Mobile Drawer Backdrop & Sidebar */}
