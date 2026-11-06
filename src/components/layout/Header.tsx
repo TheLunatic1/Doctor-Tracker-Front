@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
@@ -36,58 +37,214 @@ interface NotificationItem {
   type: 'admission' | 'schedule' | 'alert' | 'milestone';
 }
 
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 'notif-1',
-    title: 'New Patient Admission',
-    message: 'Kazi Nazrul Islam admitted under Dr. S. M. Toha in Cardiology.',
-    time: '10m ago',
-    read: false,
-    type: 'admission',
-  },
-  {
-    id: 'notif-2',
-    title: 'Physician Duty Update',
-    message: 'Dr. Sarah Ahmed updated emergency on-call schedule for City Health Hospital.',
-    time: '45m ago',
-    read: false,
-    type: 'schedule',
-  },
-  {
-    id: 'notif-3',
-    title: 'Clinical Milestone',
-    message: 'Monthly patient care plans reached 500+ across all active departments.',
-    time: '2h ago',
-    read: false,
-    type: 'milestone',
-  },
-  {
-    id: 'notif-4',
-    title: 'Rehabilitation Update',
-    message: 'Dr. Imran Hossain completed stroke recovery assessment for Tahmina Uddin.',
-    time: '5h ago',
-    read: true,
-    type: 'admission',
-  },
-  {
-    id: 'notif-5',
-    title: 'System Health Check',
-    message: 'Database compound indexes verified with 100% IXSCAN execution plans.',
-    time: '1d ago',
-    read: true,
-    type: 'alert',
-  },
-];
+const ROLE_NOTIFICATIONS: Record<string, NotificationItem[]> = {
+  patient: [
+    {
+      id: 'notif-p1',
+      title: 'Prescription Refill Approved',
+      message: 'Dr. S. M. Toha approved your Cardiocare prescription and updated follow-up instructions.',
+      time: '15m ago',
+      read: false,
+      type: 'admission',
+    },
+    {
+      id: 'notif-p2',
+      title: 'Lab Results Ready',
+      message: 'Your routine Blood Pressure and Lipid Panel was reviewed and filed by Pathology.',
+      time: '1h ago',
+      read: false,
+      type: 'milestone',
+    },
+    {
+      id: 'notif-p3',
+      title: 'Attending Physician Rounds',
+      message: 'Dr. S. M. Toha is scheduled for inpatient rounds at Apollo Hospital Room 402 at 10:00 AM.',
+      time: '3h ago',
+      read: false,
+      type: 'schedule',
+    },
+    {
+      id: 'notif-p4',
+      title: 'Vitals Logged Successfully',
+      message: 'Morning blood pressure reading (120/80 mmHg) successfully recorded in your portal.',
+      time: '6h ago',
+      read: true,
+      type: 'alert',
+    },
+    {
+      id: 'notif-p5',
+      title: 'Cardiovascular Care Milestone',
+      message: 'Completed Week 2 of rehabilitation therapy with stable clinical recovery markers.',
+      time: '1d ago',
+      read: true,
+      type: 'milestone',
+    },
+  ],
+  doctor: [
+    {
+      id: 'notif-d1',
+      title: 'Patient Vitals Alert',
+      message: 'New vitals recorded for Kazi Nazrul Islam: BP 120/80 mmHg, SpO2 98%, HR 72 bpm.',
+      time: '10m ago',
+      read: false,
+      type: 'alert',
+    },
+    {
+      id: 'notif-d2',
+      title: 'Ward Rounds Reminder',
+      message: 'Cardiology Inpatient Ward Block B rounds scheduled at 09:00 AM (8 patients).',
+      time: '45m ago',
+      read: false,
+      type: 'schedule',
+    },
+    {
+      id: 'notif-d3',
+      title: 'Clinical Consultation Request',
+      message: 'Neurology Department requested cardiology co-management consultation for Room 304.',
+      time: '2h ago',
+      read: false,
+      type: 'admission',
+    },
+    {
+      id: 'notif-d4',
+      title: 'Diagnostic Lab Alert',
+      message: 'Urgent Troponin and serial ECG reports uploaded for Patient #KA-001 review.',
+      time: '5h ago',
+      read: true,
+      type: 'alert',
+    },
+    {
+      id: 'notif-d5',
+      title: 'Discharge Protocol Ready',
+      message: 'Tahmina Uddin stroke recovery discharge protocol ready for attending physician sign-off.',
+      time: '1d ago',
+      read: true,
+      type: 'milestone',
+    },
+  ],
+  staff: [
+    {
+      id: 'notif-s1',
+      title: 'New Patient Intake Completed',
+      message: 'Admissions Desk processed emergency intake registration for incoming cardiology patient.',
+      time: '15m ago',
+      read: false,
+      type: 'admission',
+    },
+    {
+      id: 'notif-s2',
+      title: 'Bed Availability Alert',
+      message: 'Cardiology Ward Block B currently at 85% capacity (4 beds remaining in general observation).',
+      time: '40m ago',
+      read: false,
+      type: 'alert',
+    },
+    {
+      id: 'notif-s3',
+      title: 'Physician Duty Update',
+      message: 'Dr. Sarah Ahmed updated emergency on-call schedule for City Health Hospital.',
+      time: '2h ago',
+      read: false,
+      type: 'schedule',
+    },
+    {
+      id: 'notif-s4',
+      title: 'Patient Transfer Notice',
+      message: 'Patient Kazi Nazrul Islam transferred from Emergency triage to Ward 402, Bed 3.',
+      time: '4h ago',
+      read: true,
+      type: 'admission',
+    },
+    {
+      id: 'notif-s5',
+      title: 'Shift Handover Logged',
+      message: 'Morning clinical nursing handover completed with 0 pending incident reports.',
+      time: '1d ago',
+      read: true,
+      type: 'milestone',
+    },
+  ],
+  admin: [
+    {
+      id: 'notif-a1',
+      title: 'Executive System Backup',
+      message: 'Automated MongoDB database snapshot and audit log backup verified successfully.',
+      time: '20m ago',
+      read: false,
+      type: 'alert',
+    },
+    {
+      id: 'notif-a2',
+      title: 'Physician Registry Sync',
+      message: '48 hospital specialists verified with current BMDC and board credentials.',
+      time: '1h ago',
+      read: false,
+      type: 'admission',
+    },
+    {
+      id: 'notif-a3',
+      title: 'Monthly Clinical Milestone',
+      message: 'Monthly patient care plans reached 500+ across all active hospital departments.',
+      time: '2h ago',
+      read: false,
+      type: 'milestone',
+    },
+    {
+      id: 'notif-a4',
+      title: 'Infrastructure Diagnostics',
+      message: 'API response latency averaged 24ms with 100% database query cache hit rate.',
+      time: '6h ago',
+      read: true,
+      type: 'alert',
+    },
+    {
+      id: 'notif-a5',
+      title: 'Security Audit Summary',
+      message: 'Zero anomalous login attempts or role escalation breaches in the past 7 days.',
+      time: '1d ago',
+      read: true,
+      type: 'milestone',
+    },
+  ],
+};
 
 export default function Header({ onMenuToggle, title, subtitle }: HeaderProps) {
   const { user, logout } = useAuth();
-  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+  const role = user?.role || 'admin';
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Load role-scoped notifications
+  useEffect(() => {
+    const defaultList = ROLE_NOTIFICATIONS[role] || ROLE_NOTIFICATIONS.admin;
+    try {
+      const storageKey = `dt_notifs_${role}_${user?.id || 'guest'}`;
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        setNotifications(JSON.parse(saved));
+        return;
+      }
+    } catch {
+      // ignore
+    }
+    setNotifications(defaultList);
+  }, [role, user?.id]);
+
+  // Persist notifications on change
+  const persistNotifications = (updated: NotificationItem[]) => {
+    setNotifications(updated);
+    try {
+      const storageKey = `dt_notifs_${role}_${user?.id || 'guest'}`;
+      localStorage.setItem(storageKey, JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -119,17 +276,17 @@ export default function Header({ onMenuToggle, title, subtitle }: HeaderProps) {
   }, []);
 
   const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    const updated = notifications.map((n) => ({ ...n, read: true }));
+    persistNotifications(updated);
   };
 
   const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    const updated = notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
+    persistNotifications(updated);
   };
 
   const clearAllNotifications = () => {
-    setNotifications([]);
+    persistNotifications([]);
   };
 
   const getNotifIcon = (type: NotificationItem['type']) => {
@@ -287,77 +444,168 @@ export default function Header({ onMenuToggle, title, subtitle }: HeaderProps) {
 
         {/* User Badge with Dropdown */}
         <div className="relative" ref={userMenuRef}>
-          <button
-            onClick={() => {
-              setIsUserMenuOpen((prev) => !prev);
-              setIsNotifOpen(false);
-            }}
-            className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 transition-colors border-l border-slate-200 pl-3"
-            aria-label="User account menu"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">
-              {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
-            </div>
-            <div className="hidden lg:block text-left">
-              <p className="text-xs font-semibold text-slate-800">{user?.name || 'Administrator'}</p>
-              <p className="text-[10px] text-slate-500 capitalize">{user?.role || 'Super Admin'}</p>
-            </div>
-            <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden lg:block" />
-          </button>
+          {(() => {
+            const avatarUrl = user?.avatar || user?.doctorProfile?.avatar;
+            const roleLabel =
+              role === 'doctor'
+                ? 'Doctor'
+                : role === 'patient'
+                ? 'Patient'
+                : role === 'staff'
+                ? 'Hospital Staff'
+                : 'Administrator';
 
-          {/* User Popover Menu */}
-          {isUserMenuOpen && (
-            <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="p-3 border-b border-slate-100 bg-slate-50/70">
-                <p className="text-xs font-bold text-slate-900">{user?.name || 'Administrator'}</p>
-                <p className="text-[11px] text-slate-500 truncate">{user?.email || 'admin@doctortracker.com'}</p>
-                <span className="inline-flex items-center gap-1 mt-1.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
-                  <Shield className="h-3 w-3" />
-                  Authenticated Admin
-                </span>
-              </div>
-
-              <div className="p-1 space-y-0.5">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-                >
-                  <TrendingUp className="h-4 w-4 text-slate-500" />
-                  Dashboard
-                </Link>
-                <Link
-                  href="/doctors"
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-                >
-                  <Users className="h-4 w-4 text-slate-500" />
-                  Doctors Directory
-                </Link>
-                <Link
-                  href="/patients"
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-                >
-                  <User className="h-4 w-4 text-slate-500" />
-                  Patients Roster
-                </Link>
-              </div>
-
-              <div className="border-t border-slate-100 p-1">
+            return (
+              <>
                 <button
                   onClick={() => {
-                    setIsUserMenuOpen(false);
-                    logout();
+                    setIsUserMenuOpen((prev) => !prev);
+                    setIsNotifOpen(false);
                   }}
-                  className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+                  className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 transition-colors border-l border-slate-200 pl-3"
+                  aria-label="User account menu"
                 >
-                  <LogOut className="h-4 w-4 text-rose-500" />
-                  Sign Out
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={user?.name || 'User'}
+                      className="h-9 w-9 rounded-full object-cover ring-2 ring-sky-200 shadow-2xs"
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">
+                      {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
+                    </div>
+                  )}
+                  <div className="hidden lg:block text-left">
+                    <p className="text-xs font-semibold text-slate-800">{user?.name || 'User'}</p>
+                    <p className="text-[10px] text-slate-500 capitalize">{roleLabel}</p>
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-400 hidden lg:block" />
                 </button>
-              </div>
-            </div>
-          )}
+
+                {/* User Popover Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="p-3 border-b border-slate-100 bg-slate-50/70">
+                      <div className="flex items-center gap-2.5">
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt={user?.name || 'User'}
+                            className="h-8 w-8 rounded-full object-cover ring-2 ring-sky-200 shrink-0"
+                          />
+                        ) : (
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs shrink-0">
+                            {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-900 truncate">{user?.name || 'User'}</p>
+                          <p className="text-[10px] text-slate-500 truncate">{user?.email || 'user@doctortracker.com'}</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 mt-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                        <Shield className="h-3 w-3" />
+                        Authenticated {roleLabel}
+                      </span>
+                    </div>
+
+                    <div className="p-1 space-y-0.5">
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                      >
+                        <TrendingUp className="h-4 w-4 text-slate-500" />
+                        {role === 'patient'
+                          ? 'My Care Portal'
+                          : role === 'doctor'
+                          ? 'Practice Hub'
+                          : role === 'staff'
+                          ? 'Admissions Desk'
+                          : 'Dashboard'}
+                      </Link>
+
+                      {(role === 'admin' || role === 'staff') && (
+                        <>
+                          <Link
+                            href="/doctors"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                          >
+                            <Users className="h-4 w-4 text-slate-500" />
+                            {role === 'staff' ? 'On-Duty Doctors' : 'Doctors Directory'}
+                          </Link>
+                          <Link
+                            href="/patients"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                          >
+                            <User className="h-4 w-4 text-slate-500" />
+                            {role === 'staff' ? 'Patient Roster' : 'Patients Roster'}
+                          </Link>
+                        </>
+                      )}
+
+                      {role === 'doctor' && (
+                        <>
+                          <Link
+                            href="/patients"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                          >
+                            <User className="h-4 w-4 text-slate-500" />
+                            My Patients
+                          </Link>
+                          <Link
+                            href="/doctors"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                          >
+                            <Users className="h-4 w-4 text-slate-500" />
+                            Physicians Directory
+                          </Link>
+                        </>
+                      )}
+
+                      {role === 'patient' && (
+                        <Link
+                          href="/doctors"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                        >
+                          <Users className="h-4 w-4 text-slate-500" />
+                          My Doctor
+                        </Link>
+                      )}
+
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+                      >
+                        <User className="h-4 w-4 text-slate-500" />
+                        Profile & Settings
+                      </Link>
+                    </div>
+
+                    <div className="border-t border-slate-100 p-1">
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          logout();
+                        }}
+                        className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4 text-rose-500" />
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
     </header>

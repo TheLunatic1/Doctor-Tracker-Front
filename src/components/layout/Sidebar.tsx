@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import React from 'react';
 import Link from 'next/link';
@@ -225,48 +226,73 @@ export default function Sidebar({
 
       {/* User Footer */}
       <div className="border-t border-slate-800/80 p-3">
-        {isExpanded ? (
-          <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-900/60 p-2.5 border border-slate-800 animate-in fade-in duration-200">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-sky-400 font-bold text-xs ring-2 ring-sky-500/30">
-                {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
+        {(() => {
+          const avatarUrl = user?.avatar || user?.doctorProfile?.avatar;
+
+          if (isExpanded) {
+            return (
+              <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-900/60 p-2.5 border border-slate-800 animate-in fade-in duration-200">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={user?.name || 'User'}
+                      className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-sky-500/30"
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-500/20 text-sky-400 font-bold text-xs ring-2 ring-sky-500/30">
+                      {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-semibold text-white">
+                      {user?.name || 'Administrator'}
+                    </p>
+                    <p className="truncate text-[11px] text-slate-400 capitalize">
+                      {user?.role || 'Admin'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => logout()}
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
+                  title="Sign out"
+                  aria-label="Sign out"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-white">
-                  {user?.name || 'Administrator'}
-                </p>
-                <p className="truncate text-[11px] text-slate-400 capitalize">
-                  {user?.role || 'Admin'}
-                </p>
-              </div>
+            );
+          }
+
+          return (
+            <div className="flex flex-col items-center gap-2">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={user?.name || 'User'}
+                  className="h-10 w-10 shrink-0 rounded-xl object-cover ring-2 ring-sky-500/30 cursor-pointer hover:ring-sky-400 transition-all"
+                  title={`${user?.name || 'Admin'} (${user?.role || 'Admin'})`}
+                />
+              ) : (
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400 font-bold text-xs ring-2 ring-sky-500/30 cursor-pointer hover:ring-sky-400 transition-all"
+                  title={`${user?.name || 'Admin'} (${user?.role || 'Admin'})`}
+                >
+                  {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
+                </div>
+              )}
+              <button
+                onClick={() => logout()}
+                className="rounded-lg p-2 text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
+                title="Sign out"
+                aria-label="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              onClick={() => logout()}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
-              title="Sign out"
-              aria-label="Sign out"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2">
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400 font-bold text-xs ring-2 ring-sky-500/30 cursor-pointer hover:ring-sky-400 transition-all"
-              title={`${user?.name || 'Admin'} (${user?.role || 'Admin'})`}
-            >
-              {user?.name ? user.name.slice(0, 2).toUpperCase() : 'AD'}
-            </div>
-            <button
-              onClick={() => logout()}
-              className="rounded-lg p-2 text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition-colors"
-              title="Sign out"
-              aria-label="Sign out"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </aside>
   );

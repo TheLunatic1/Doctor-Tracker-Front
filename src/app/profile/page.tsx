@@ -1,6 +1,7 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AppShell from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +27,31 @@ import {
   Terminal,
   Shield,
   Heart,
+  Camera,
+  Upload,
+  Image as ImageIcon,
+  Sparkles,
+  Trash2,
 } from 'lucide-react';
+
+const PRESET_AVATARS = [
+  '/images/doctors/doctor-1.jpg',
+  '/images/doctors/doctor-2.jpg',
+  '/images/doctors/doctor-3.jpg',
+  '/images/doctors/doctor-4.jpg',
+  '/images/doctors/doctor-5.jpg',
+  '/images/doctors/doctor-6.jpg',
+  '/images/doctors/doctor-7.jpg',
+  '/images/doctors/doctor-8.jpg',
+  '/images/doctors/doctor-9.jpg',
+  '/images/doctors/doctor-10.jpg',
+  '/images/doctors/doctor-11.jpg',
+  '/images/doctors/doctor-12.jpg',
+  '/images/doctors/doctor-13.jpg',
+  '/images/doctors/doctor-14.jpg',
+  '/images/doctors/doctor-15.jpg',
+  '/images/doctors/doctor-16.jpg',
+];
 
 export default function ProfilePage() {
   const { user, logout, checkAuth } = useAuth();
@@ -36,12 +61,17 @@ export default function ProfilePage() {
   // Form states
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [avatar, setAvatar] = useState('');
   const [specialization, setSpecialization] = useState('Cardiology');
   const [hospital, setHospital] = useState('Apollo Hospital');
   const [qualification, setQualification] = useState('MBBS, MDs');
   const [yearsExperience, setYearsExperience] = useState(15);
   const [bio, setBio] = useState('');
   const [notes, setNotes] = useState('');
+  const [showPresets, setShowPresets] = useState(false);
+
+  // Hidden file input ref for custom photo uploads
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password fields
   const [currentPassword, setCurrentPassword] = useState('');
@@ -54,6 +84,12 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       setName(user.name || '');
+      setAvatar(
+        user.avatar ||
+          user.doctorProfile?.avatar ||
+          (user.patientProfile as unknown as { avatar?: string })?.avatar ||
+          ''
+      );
       if (user.doctorProfile) {
         setPhone(user.doctorProfile.phone || '');
         setSpecialization(user.doctorProfile.specialization || 'Cardiology');
@@ -69,6 +105,64 @@ export default function ProfilePage() {
       }
     }
   }, [user]);
+
+  // Client-side image upload and compression to high-quality Base64
+  const handleImageUpload = (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload a valid image file (PNG, JPG, WebP).');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error('Image size must be under 8MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (readerEvent) => {
+      const dataUrl = readerEvent.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDimension = 320;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDimension) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          }
+        } else {
+          if (height > maxDimension) {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.88);
+          setAvatar(compressed);
+          toast.success('New profile photo loaded! Click "Save Changes" below to apply.');
+        } else {
+          setAvatar(dataUrl);
+        }
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +187,7 @@ export default function ProfilePage() {
       const payload: Record<string, unknown> = {
         name,
         phone,
+        avatar,
       };
 
       if (role === 'doctor') {
@@ -119,11 +214,14 @@ export default function ProfilePage() {
         await checkAuth();
       }
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { error?: { message?: string }; message?: string } } }).response?.data?.error?.message ||
-          (err as { response?: { data?: { error?: { message?: string }; message?: string } } }).response?.data?.message ||
-          'Failed to update profile.'
-        : 'Failed to update profile.';
+      const msg =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { error?: { message?: string }; message?: string } } })
+              .response?.data?.error?.message ||
+            (err as { response?: { data?: { error?: { message?: string }; message?: string } } })
+              .response?.data?.message ||
+            'Failed to update profile.'
+          : 'Failed to update profile.';
       toast.error(msg);
     } finally {
       setIsSaving(false);
@@ -158,15 +256,46 @@ export default function ProfilePage() {
   return (
     <AppShell title={currentMeta.title} subtitle={currentMeta.subtitle}>
       <div className="max-w-5xl space-y-6 pb-12">
-        {/* User Card */}
+        {/* Hidden File Input for Custom Avatar Upload */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/png,image/jpeg,image/jpg,image/webp"
+          onChange={handleFileInputChange}
+          className="hidden"
+          aria-label="Upload profile image"
+        />
+
+        {/* User Card with Interactive Photo Uploader */}
         <Card className="p-6 md:p-8 border-slate-100 shadow-sm bg-gradient-to-r from-white via-white to-sky-50/40">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-extrabold text-2xl shadow-xl shadow-sky-500/20 ring-4 ring-white">
-                {user?.name ? user.name.slice(0, 2).toUpperCase() : 'DT'}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+              {/* Avatar Preview with Camera Overlay */}
+              <div className="relative group shrink-0">
+                {avatar ? (
+                  <img
+                    src={avatar}
+                    alt={user?.name || 'Profile photo'}
+                    className="h-24 w-24 rounded-3xl object-cover ring-4 ring-white shadow-xl shadow-sky-500/15"
+                  />
+                ) : (
+                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-extrabold text-2xl shadow-xl shadow-sky-500/20 ring-4 ring-white">
+                    {user?.name ? user.name.slice(0, 2).toUpperCase() : 'DT'}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-xl bg-sky-600 hover:bg-sky-500 text-white shadow-md ring-2 ring-white transition-transform hover:scale-110"
+                  title="Upload new image"
+                  aria-label="Upload new image"
+                >
+                  <Camera className="h-4 w-4" />
+                </button>
               </div>
+
               <div className="space-y-1.5">
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
                     {user?.name || 'User Profile'}
                   </h1>
@@ -178,11 +307,49 @@ export default function ProfilePage() {
                   <Mail className="h-3.5 w-3.5 text-slate-400" />
                   {user?.email}
                 </p>
-                <div className="flex items-center gap-2 pt-1">
+                <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                     Authenticated Role Active: {role.toUpperCase()}
                   </span>
+                </div>
+
+                {/* Avatar Action Buttons */}
+                <div className="flex flex-wrap items-center gap-2 pt-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-xs h-8 gap-1.5 border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                  >
+                    <Upload className="h-3.5 w-3.5 text-sky-600" />
+                    Upload Photo
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowPresets((prev) => !prev)}
+                    className={`text-xs h-8 gap-1.5 border-slate-200 ${
+                      showPresets ? 'bg-sky-50 text-sky-700 border-sky-300' : 'bg-white hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                    {showPresets ? 'Hide Presets' : 'Choose Preset'}
+                  </Button>
+                  {avatar && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setAvatar('')}
+                      className="text-xs h-8 gap-1 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Remove
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -190,12 +357,61 @@ export default function ProfilePage() {
             <Button
               onClick={logout}
               variant="outline"
-              className="gap-2 text-rose-600 hover:bg-rose-50 border-rose-200"
+              className="gap-2 text-rose-600 hover:bg-rose-50 border-rose-200 shrink-0 self-start sm:self-center"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
             </Button>
           </div>
+
+          {/* Preset Avatars Gallery Dropdown */}
+          {showPresets && (
+            <div className="mt-6 pt-5 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900">Hospital Specialist Avatar Presets</h3>
+                  <p className="text-[11px] text-slate-500">Click any professional medical photo to set as your avatar</p>
+                </div>
+                <span className="text-[11px] font-semibold text-sky-600">
+                  {PRESET_AVATARS.length} options
+                </span>
+              </div>
+              <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
+                {PRESET_AVATARS.map((preset, index) => {
+                  const isSelected = avatar === preset;
+                  return (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        setAvatar(preset);
+                        toast.success(`Selected Avatar #${index + 1}! Click "Save Changes" to apply.`);
+                      }}
+                      className={`relative group rounded-2xl overflow-hidden aspect-square border-2 transition-all p-0.5 ${
+                        isSelected
+                          ? 'border-sky-600 ring-2 ring-sky-300 scale-105 shadow-md'
+                          : 'border-slate-200 hover:border-sky-400 hover:scale-105'
+                      }`}
+                      title={`Select Avatar ${index + 1}`}
+                    >
+                      <img
+                        src={preset}
+                        alt={`Preset ${index + 1}`}
+                        className="h-full w-full object-cover rounded-xl"
+                      />
+                      {isSelected && (
+                        <div className="absolute inset-0 bg-sky-600/30 flex items-center justify-center rounded-xl">
+                          <div className="h-5 w-5 rounded-full bg-white text-sky-600 flex items-center justify-center shadow">
+                            <CheckCircle2 className="h-4 w-4" />
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </Card>
 
         {/* Profile Editing Form */}

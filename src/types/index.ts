@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   role: 'admin' | 'doctor' | 'staff' | 'patient';
+  avatar?: string;
   createdAt: string;
   doctorProfile?: Doctor;
   patientProfile?: Patient;
@@ -36,6 +37,7 @@ export interface Patient {
   doctor: Doctor | string;
   status: 'Active' | 'Discharged' | 'Critical';
   medicalRecordNumber?: string;
+  avatar?: string;
   admittedAt: string;
   notes?: string;
   createdAt: string;

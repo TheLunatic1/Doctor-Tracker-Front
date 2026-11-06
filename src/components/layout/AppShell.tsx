@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { cn } from '@/lib/utils';
@@ -11,13 +11,19 @@ interface AppShellProps {
   subtitle?: string;
 }
 
+// Global persistent state across client page navigations
+let globalIsHovered = false;
+let globalIsClickedOpen = false;
+
 export default function AppShell({ children, title, subtitle }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  const [isHovered, setIsHovered] = useState(() => globalIsHovered || globalIsClickedOpen);
+  const [isClickedOpen, setIsClickedOpen] = useState(() => globalIsClickedOpen);
 
-  const enterTimerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const leaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const sidebarContainerRef = useRef<HTMLDivElement>(null);
+  const enterTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     try {
@@ -39,25 +45,93 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
     if (!isHovered && !enterTimerRef.current) {
       enterTimerRef.current = setTimeout(() => {
         setIsHovered(true);
+        globalIsHovered = true;
         enterTimerRef.current = null;
-      }, 220); // Deliberate intent delay: prevents jitter on passing mouse
+      }, 180); // Smooth intent delay
     }
   };
 
-  const handleMouseLeave = () => {
+  const handleSidebarClick = () => {
+    // When clicking inside the sidebar, keep it open until the cursor leaves its bounds
+    setIsClickedOpen(true);
+    globalIsClickedOpen = true;
+    setIsHovered(true);
+    globalIsHovered = true;
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent) => {
     if (!isCollapsed) return;
     if (enterTimerRef.current) {
       clearTimeout(enterTimerRef.current);
       enterTimerRef.current = null;
     }
+
+    // Verify whether cursor has truly left the sidebar bounding box
+    const el = sidebarContainerRef.current;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const isInside =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
+      if (isInside) return;
+    }
+
     if (leaveTimerRef.current) {
       clearTimeout(leaveTimerRef.current);
     }
     leaveTimerRef.current = setTimeout(() => {
       setIsHovered(false);
+      setIsClickedOpen(false);
+      globalIsHovered = false;
+      globalIsClickedOpen = false;
       leaveTimerRef.current = null;
-    }, 320); // Grace period: keeps sidebar open if cursor briefly crosses border
+    }, 240); // Grace period: keeps sidebar open until cursor is fully out of bounds
   };
+
+  // Global mousemove tracker: ensures sidebar stays open after clicking
+  // and closes only when cursor is completely outside its bounding box
+  useEffect(() => {
+    if (!isCollapsed || (!isHovered && !isClickedOpen)) return;
+
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      const el = sidebarContainerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const isInside =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
+
+      if (!isInside) {
+        if (!leaveTimerRef.current) {
+          leaveTimerRef.current = setTimeout(() => {
+            setIsHovered(false);
+            setIsClickedOpen(false);
+            globalIsHovered = false;
+            globalIsClickedOpen = false;
+            leaveTimerRef.current = null;
+          }, 240);
+        }
+      } else {
+        if (leaveTimerRef.current) {
+          clearTimeout(leaveTimerRef.current);
+          leaveTimerRef.current = null;
+        }
+      }
+    };
+
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+    };
+  }, [isCollapsed, isHovered, isClickedOpen]);
 
   useEffect(() => {
     return () => {
@@ -70,6 +144,9 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
     if (enterTimerRef.current) clearTimeout(enterTimerRef.current);
     if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
     setIsHovered(false);
+    setIsClickedOpen(false);
+    globalIsHovered = false;
+    globalIsClickedOpen = false;
     setIsCollapsed((prev) => {
       const next = !prev;
       try {
@@ -81,20 +158,24 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
     });
   };
 
+  const isExpandedDesktop = !isCollapsed || isHovered || isClickedOpen;
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50/70">
-      {/* Desktop Sidebar Rail with Hover Expansion */}
+      {/* Desktop Sidebar Rail with Hover & Click Expansion */}
       <div
         className={cn(
           'hidden md:block shrink-0 transition-all duration-300 ease-out relative',
-          isCollapsed ? (isHovered ? 'w-64 z-50' : 'w-20 z-40') : 'w-64 z-40'
+          isCollapsed ? (isExpandedDesktop ? 'w-64 z-50' : 'w-20 z-40') : 'w-64 z-40'
         )}
       >
         <div
+          ref={sidebarContainerRef}
+          onClick={handleSidebarClick}
           className={cn(
             'fixed top-0 bottom-0 left-0 transition-all duration-300 ease-out z-50 flex flex-col bg-[#0b1329]',
             isCollapsed
-              ? isHovered
+              ? isExpandedDesktop
                 ? 'w-64 shadow-2xl shadow-slate-950/70 ring-1 ring-slate-800'
                 : 'w-20'
               : 'w-64'
@@ -104,7 +185,7 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
         >
           <Sidebar
             isCollapsed={isCollapsed}
-            isHovered={isHovered}
+            isHovered={isHovered || isClickedOpen}
             onToggleCollapse={toggleCollapse}
           />
         </div>
