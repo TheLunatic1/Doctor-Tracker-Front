@@ -6,17 +6,14 @@ test.describe('Phase 5 Quality Gate: Frontend Foundation & Authentication Flow',
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('Login page renders brand, inputs, and quick demo credentials button', async ({ page }) => {
+  test('Login page renders brand and input fields', async ({ page }) => {
     await page.goto('/login');
     await expect(page.getByRole('heading', { name: /sign in/i })).toBeVisible();
     await expect(page.getByPlaceholder('name@doctortracker.com')).toBeVisible();
     await expect(page.getByPlaceholder('••••••••••••')).toBeVisible();
 
-    const demoBtn = page.getByRole('button', { name: /fill demo admin credentials/i });
-    await expect(demoBtn).toBeVisible();
-
-    // Click demo button and verify fields are filled
-    await demoBtn.click();
+    await page.getByPlaceholder('name@doctortracker.com').fill('admin@doctortracker.com');
+    await page.getByPlaceholder('••••••••••••').fill('Admin123456!');
     await expect(page.getByPlaceholder('name@doctortracker.com')).toHaveValue('admin@doctortracker.com');
     await expect(page.getByPlaceholder('••••••••••••')).toHaveValue('Admin123456!');
   });
@@ -75,7 +72,8 @@ test.describe('Phase 5 Quality Gate: Frontend Foundation & Authentication Flow',
     });
 
     await page.goto('/login');
-    await page.getByRole('button', { name: /fill demo admin credentials/i }).click();
+    await page.getByPlaceholder('name@doctortracker.com').fill('admin@doctortracker.com');
+    await page.getByPlaceholder('••••••••••••').fill('Admin123456!');
     await page.getByRole('button', { name: /^sign in$/i }).click();
 
     // Verify redirection to /dashboard

@@ -100,7 +100,7 @@ export default function LandingPage() {
                 </Button>
                 <Button asChild variant="outline" size="lg" className="rounded-2xl px-7 bg-white text-base">
                   <Link href="/dashboard">
-                    Live Demo
+                    Explore Dashboard
                   </Link>
                 </Button>
               </div>

@@ -24,11 +24,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemoAdmin = () => {
-    setEmail('admin@doctortracker.com');
-    setPassword('Admin123456!');
-  };
-
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-sky-50 via-slate-50 to-blue-50">
       {/* Left Column: Healthcare Brand & Value Proposition (Desktop) */}
@@ -114,19 +109,6 @@ export default function LoginPage() {
             <p className="text-sm text-slate-500">
               Enter your credentials to access your dashboard
             </p>
-          </div>
-
-          {/* Quick Demo Fill Pill */}
-          <div className="rounded-xl bg-sky-50 p-3 border border-sky-100 text-center">
-            <p className="text-xs text-sky-900 font-medium mb-1.5">Recruiter / Demo Quick Login</p>
-            <button
-              type="button"
-              onClick={fillDemoAdmin}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700 transition-colors shadow-sm"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              Fill Demo Admin Credentials
-            </button>
           </div>
 
           {/* Form */}
