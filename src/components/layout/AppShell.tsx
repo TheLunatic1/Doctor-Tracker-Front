@@ -44,16 +44,16 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
       {/* Desktop Sidebar Rail with Hover Expansion */}
       <div
         className={cn(
-          'hidden md:block shrink-0 transition-all duration-300 ease-in-out relative z-30',
-          isCollapsed ? 'w-20' : 'w-64'
+          'hidden md:block shrink-0 transition-all duration-300 ease-in-out relative',
+          isCollapsed ? (isHovered ? 'w-20 z-50' : 'w-20 z-40') : 'w-64 z-40'
         )}
       >
         <div
           className={cn(
-            'fixed top-0 bottom-0 left-0 transition-all duration-300 ease-in-out z-40 flex flex-col',
+            'fixed top-0 bottom-0 left-0 transition-all duration-300 ease-in-out z-50 flex flex-col bg-[#0b1329]',
             isCollapsed
               ? isHovered
-                ? 'w-64 shadow-2xl shadow-slate-950/50 ring-1 ring-slate-800'
+                ? 'w-64 shadow-2xl shadow-slate-950/70 ring-1 ring-slate-800'
                 : 'w-20'
               : 'w-64'
           )}

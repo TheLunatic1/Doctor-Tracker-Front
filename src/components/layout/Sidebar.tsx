@@ -80,7 +80,7 @@ export default function Sidebar({
       {/* Brand Header */}
       <div
         className={cn(
-          'flex h-16 items-center border-b border-slate-800 transition-all duration-300',
+          'flex h-16 items-center border-b border-slate-800 transition-all duration-300 bg-[#0b1329]',
           isExpanded ? 'justify-between px-5' : 'justify-center px-2'
         )}
       >

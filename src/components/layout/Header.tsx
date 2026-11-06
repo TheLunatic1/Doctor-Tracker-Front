@@ -15,8 +15,11 @@ import {
   User,
   Shield,
   ChevronDown,
+  Search,
+  Command,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
+import CommandPalette from '@/components/shared/CommandPalette';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -81,11 +84,24 @@ export default function Header({ onMenuToggle, title, subtitle }: HeaderProps) {
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // Global Ctrl+K / Cmd+K shortcut listener for Spotlight search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Click outside to close dropdowns
   useEffect(() => {
@@ -130,7 +146,8 @@ export default function Header({ onMenuToggle, title, subtitle }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-100 bg-white/90 px-4 md:px-8 backdrop-blur-md">
+    <>
+      <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-slate-100 bg-white/90 px-4 md:px-8 backdrop-blur-md">
       <div className="flex items-center gap-3">
         <button
           onClick={onMenuToggle}
@@ -147,7 +164,29 @@ export default function Header({ onMenuToggle, title, subtitle }: HeaderProps) {
         )}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Spotlight Command Palette Trigger */}
+        <button
+          onClick={() => setIsCommandPaletteOpen(true)}
+          className="hidden sm:flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-slate-100 hover:border-slate-300 px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800 transition-all shadow-2xs group"
+          title="Spotlight Search (Ctrl + K)"
+        >
+          <Search className="h-3.5 w-3.5 text-slate-400 group-hover:text-sky-600 transition-colors" />
+          <span className="font-medium">Search or jump to...</span>
+          <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 shadow-2xs">
+            Ctrl K
+          </kbd>
+        </button>
+
+        <button
+          onClick={() => setIsCommandPaletteOpen(true)}
+          className="sm:hidden flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50"
+          aria-label="Spotlight Search"
+          title="Spotlight Search"
+        >
+          <Search className="h-4 w-4" />
+        </button>
+
         {/* Interactive Notification Bell */}
         <div className="relative" ref={notifRef}>
           <button
@@ -322,5 +361,11 @@ export default function Header({ onMenuToggle, title, subtitle }: HeaderProps) {
         </div>
       </div>
     </header>
-  );
+
+    <CommandPalette
+      open={isCommandPaletteOpen}
+      onOpenChange={setIsCommandPaletteOpen}
+    />
+  </>
+);
 }

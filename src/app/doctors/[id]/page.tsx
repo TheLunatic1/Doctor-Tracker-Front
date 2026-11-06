@@ -37,6 +37,7 @@ import {
 import { useDebounce } from '@/hooks/useDebounce';
 import { formatDate } from '@/lib/utils';
 import { Patient } from '@/types';
+import { getDoctorWorkload } from '@/lib/workload';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -182,6 +183,18 @@ export default function DoctorDetailPage({ params }: PageProps) {
                 <Badge variant="blue" className="text-xs px-3 py-1 font-semibold">
                   {doctor.specialization}
                 </Badge>
+                {(() => {
+                  const load = getDoctorWorkload(doctor.patientCount || 0);
+                  return (
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${load.badgeClass}`}
+                      title={load.description}
+                    >
+                      <span className={`h-2 w-2 rounded-full ${load.dotColor}`} />
+                      {load.label} ({doctor.patientCount || 0} Patients • {load.percentage}% Load)
+                    </span>
+                  );
+                })()}
               </div>
 
               <p className="text-xs sm:text-sm text-slate-500 max-w-xl leading-relaxed">
