@@ -16,6 +16,9 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
+  const enterTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const leaveTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem('doctor_tracker_sidebar_collapsed');
@@ -27,7 +30,45 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
     }
   }, []);
 
+  const handleMouseEnter = () => {
+    if (!isCollapsed) return;
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+    if (!isHovered && !enterTimerRef.current) {
+      enterTimerRef.current = setTimeout(() => {
+        setIsHovered(true);
+        enterTimerRef.current = null;
+      }, 220); // Deliberate intent delay: prevents jitter on passing mouse
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isCollapsed) return;
+    if (enterTimerRef.current) {
+      clearTimeout(enterTimerRef.current);
+      enterTimerRef.current = null;
+    }
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+    }
+    leaveTimerRef.current = setTimeout(() => {
+      setIsHovered(false);
+      leaveTimerRef.current = null;
+    }, 320); // Grace period: keeps sidebar open if cursor briefly crosses border
+  };
+
+  useEffect(() => {
+    return () => {
+      if (enterTimerRef.current) clearTimeout(enterTimerRef.current);
+      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
+    };
+  }, []);
+
   const toggleCollapse = () => {
+    if (enterTimerRef.current) clearTimeout(enterTimerRef.current);
+    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
     setIsHovered(false);
     setIsCollapsed((prev) => {
       const next = !prev;
@@ -45,21 +86,21 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
       {/* Desktop Sidebar Rail with Hover Expansion */}
       <div
         className={cn(
-          'hidden md:block shrink-0 transition-all duration-300 ease-in-out relative',
+          'hidden md:block shrink-0 transition-all duration-300 ease-out relative',
           isCollapsed ? (isHovered ? 'w-64 z-50' : 'w-20 z-40') : 'w-64 z-40'
         )}
       >
         <div
           className={cn(
-            'fixed top-0 bottom-0 left-0 transition-all duration-300 ease-in-out z-50 flex flex-col bg-[#0b1329]',
+            'fixed top-0 bottom-0 left-0 transition-all duration-300 ease-out z-50 flex flex-col bg-[#0b1329]',
             isCollapsed
               ? isHovered
                 ? 'w-64 shadow-2xl shadow-slate-950/70 ring-1 ring-slate-800'
                 : 'w-20'
               : 'w-64'
           )}
-          onMouseEnter={() => isCollapsed && setIsHovered(true)}
-          onMouseLeave={() => isCollapsed && setIsHovered(false)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           <Sidebar
             isCollapsed={isCollapsed}

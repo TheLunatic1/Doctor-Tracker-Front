@@ -469,13 +469,13 @@ export default function DoctorsPage() {
             </div>
             <div>
               <p className="text-xs text-slate-500 font-medium">
-                {isDoctor ? 'Total Physicians' : 'Total Doctors'}
+                {isPatient ? 'Total Specialists' : isDoctor ? 'Total Physicians' : 'Total Doctors'}
               </p>
               <p className="text-2xl font-extrabold text-slate-900 mt-0.5">{meta?.total || 48}</p>
             </div>
           </div>
           <p className="text-[11px] text-emerald-600 font-semibold mt-3 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5" /> {isDoctor ? 'Hospital Wide Faculty' : '+8.2% from last month'}
+            <TrendingUp className="h-3.5 w-3.5" /> {isPatient || isDoctor ? 'Hospital Wide Faculty' : '+8.2% from last month'}
           </p>
         </Card>
 
@@ -485,7 +485,9 @@ export default function DoctorsPage() {
               <Stethoscope className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs text-slate-500 font-medium">Active Doctors</p>
+              <p className="text-xs text-slate-500 font-medium">
+                {isPatient ? 'Active On-Duty' : 'Active Doctors'}
+              </p>
               <p className="text-2xl font-extrabold text-slate-900 mt-0.5">
                 {doctorsList.filter((d) => d.status === 'Active').length || 46}
               </p>
@@ -503,15 +505,15 @@ export default function DoctorsPage() {
             </div>
             <div>
               <p className="text-xs text-slate-500 font-medium">
-                {isDoctor ? 'Department Specialists' : 'This Month'}
+                {isPatient ? 'Clinical Specialties' : isDoctor ? 'Department Specialists' : 'This Month'}
               </p>
               <p className="text-2xl font-extrabold text-slate-900 mt-0.5">
-                {isDoctor ? 'Cardiology' : '12'}
+                {isPatient ? '12 Specialties' : isDoctor ? 'Cardiology' : '12'}
               </p>
             </div>
           </div>
           <p className="text-[11px] text-emerald-600 font-semibold mt-3 flex items-center gap-1">
-            <TrendingUp className="h-3.5 w-3.5" /> {isDoctor ? 'Specialist Faculty' : '+20.0% new onboards'}
+            <TrendingUp className="h-3.5 w-3.5" /> {isPatient || isDoctor ? 'Specialist Faculty' : '+20.0% new onboards'}
           </p>
         </Card>
 
@@ -522,15 +524,15 @@ export default function DoctorsPage() {
             </div>
             <div className="min-w-0">
               <p className="text-xs text-slate-500 font-medium">
-                {isDoctor ? 'Affiliation' : 'Top Hospital'}
+                {isPatient ? 'Primary Campus' : isDoctor ? 'Affiliation' : 'Top Hospital'}
               </p>
               <p className="text-sm font-bold text-slate-900 truncate mt-0.5">
-                {isDoctor ? 'Apollo Hospital' : 'City Health Hospital ★'}
+                {isPatient || isDoctor ? 'Apollo Hospital & Network' : 'City Health Hospital ★'}
               </p>
             </div>
           </div>
           <p className="text-[11px] text-slate-500 font-medium mt-3">
-            {isDoctor ? 'Primary Medical Campus' : 'Highest patient rating'}
+            {isPatient ? 'Apollo Hospital Dhaka' : isDoctor ? 'Primary Medical Campus' : 'Highest patient rating'}
           </p>
         </Card>
       </div>
