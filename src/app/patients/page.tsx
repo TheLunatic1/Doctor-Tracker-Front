@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import AppShell from '@/components/layout/AppShell';
+import { useAuth } from '@/features/auth/AuthContext';
 import {
   Users,
   Plus,
@@ -52,6 +54,18 @@ const CONDITIONS = [
 ];
 
 export default function PatientsPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const isAdmin = user?.role === 'admin';
+  const canAddPatient = user?.role === 'admin' || user?.role === 'staff' || user?.role === 'doctor';
+
+  useEffect(() => {
+    // Redirect patients to their dedicated personal care portal
+    if (user && user.role === 'patient') {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState('');
   const [condition, setCondition] = useState('All Conditions');
@@ -186,17 +200,19 @@ export default function PatientsPage() {
           </div>
         </div>
 
-        <Button
-          onClick={() => {
-            setPatientToEdit(null);
-            setIsModalOpen(true);
-          }}
-          variant="primary"
-          className="gap-2 shadow-md shadow-sky-600/20 rounded-xl"
-        >
-          <Plus className="h-4 w-4" />
-          Add Patient
-        </Button>
+        {canAddPatient && (
+          <Button
+            onClick={() => {
+              setPatientToEdit(null);
+              setIsModalOpen(true);
+            }}
+            variant="primary"
+            className="gap-2 shadow-md shadow-sky-600/20 rounded-xl"
+          >
+            <Plus className="h-4 w-4" />
+            Add Patient
+          </Button>
+        )}
       </div>
 
       {/* Top 4 Stat Summary Cards */}
@@ -544,15 +560,17 @@ export default function PatientsPage() {
                           >
                             <Edit2 className="h-4 w-4 text-slate-500 hover:text-sky-600" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600"
-                            title="Delete patient"
-                            onClick={() => setPatientToDelete(p)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {isAdmin && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600"
+                              title="Delete patient"
+                              onClick={() => setPatientToDelete(p)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>

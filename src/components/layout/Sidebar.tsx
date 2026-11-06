@@ -37,38 +37,90 @@ export default function Sidebar({
   // Expanded if not collapsed OR when hovering over the collapsed sidebar
   const isExpanded = !isCollapsed || isHovered;
 
+  const role = user?.role || 'admin';
+
   const navItems = [
     {
-      title: 'Dashboard',
+      title:
+        role === 'patient'
+          ? 'My Care Portal'
+          : role === 'doctor'
+          ? 'Practice Hub'
+          : role === 'staff'
+          ? 'Admissions Desk'
+          : 'Dashboard',
       href: '/dashboard',
       icon: LayoutDashboard,
       active: pathname === '/dashboard',
     },
-    {
-      title: 'Doctors',
+  ];
+
+  if (role === 'admin') {
+    navItems.push(
+      {
+        title: 'Doctors',
+        href: '/doctors',
+        icon: Stethoscope,
+        active: pathname.startsWith('/doctors'),
+      },
+      {
+        title: 'Patients',
+        href: '/patients',
+        icon: Users,
+        active: pathname.startsWith('/patients'),
+      },
+      {
+        title: 'Analytics',
+        href: '/analytics',
+        icon: BarChart3,
+        active: pathname === '/analytics',
+      }
+    );
+  } else if (role === 'doctor') {
+    navItems.push(
+      {
+        title: 'My Patients',
+        href: '/patients',
+        icon: Users,
+        active: pathname.startsWith('/patients'),
+      },
+      {
+        title: 'Physicians Directory',
+        href: '/doctors',
+        icon: Stethoscope,
+        active: pathname.startsWith('/doctors'),
+      }
+    );
+  } else if (role === 'staff') {
+    navItems.push(
+      {
+        title: 'Patient Roster',
+        href: '/patients',
+        icon: Users,
+        active: pathname.startsWith('/patients'),
+      },
+      {
+        title: 'On-Duty Doctors',
+        href: '/doctors',
+        icon: Stethoscope,
+        active: pathname.startsWith('/doctors'),
+      }
+    );
+  } else if (role === 'patient') {
+    navItems.push({
+      title: 'My Doctor',
       href: '/doctors',
       icon: Stethoscope,
       active: pathname.startsWith('/doctors'),
-    },
-    {
-      title: 'Patients',
-      href: '/patients',
-      icon: Users,
-      active: pathname.startsWith('/patients'),
-    },
-    {
-      title: 'Analytics',
-      href: '/analytics',
-      icon: BarChart3,
-      active: pathname === '/analytics',
-    },
-    {
-      title: 'Profile & Settings',
-      href: '/profile',
-      icon: User,
-      active: pathname === '/profile',
-    },
-  ];
+    });
+  }
+
+  navItems.push({
+    title: 'Profile & Settings',
+    href: '/profile',
+    icon: User,
+    active: pathname === '/profile',
+  });
 
   return (
     <aside

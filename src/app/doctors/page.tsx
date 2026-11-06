@@ -36,6 +36,7 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import DoctorFormModal from '@/features/doctors/DoctorFormModal';
 import { useDoctors, useDeleteDoctor } from '@/features/doctors/useDoctors';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useAuth } from '@/features/auth/AuthContext';
 import { Doctor } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -81,6 +82,9 @@ export default function DoctorsPage() {
   const [doctorToEdit, setDoctorToEdit] = useState<Doctor | null>(null);
   const [doctorToDelete, setDoctorToDelete] = useState<Doctor | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   const [sortField, setSortField] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -209,17 +213,19 @@ export default function DoctorsPage() {
           </div>
         </div>
 
-        <Button
-          onClick={() => {
-            setDoctorToEdit(null);
-            setIsCreateOpen(true);
-          }}
-          variant="primary"
-          className="gap-2 shadow-md shadow-sky-600/20 rounded-xl"
-        >
-          <Plus className="h-4 w-4" />
-          Add Doctor
-        </Button>
+        {isAdmin && (
+          <Button
+            onClick={() => {
+              setDoctorToEdit(null);
+              setIsCreateOpen(true);
+            }}
+            variant="primary"
+            className="gap-2 shadow-md shadow-sky-600/20 rounded-xl"
+          >
+            <Plus className="h-4 w-4" />
+            Add Doctor
+          </Button>
+        )}
       </div>
 
       {/* Top 4 Stat Summary Cards */}
@@ -560,27 +566,31 @@ export default function DoctorsPage() {
                                 <Eye className="h-4 w-4 text-slate-500 hover:text-sky-600" />
                               </Link>
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              title="Edit profile"
-                              onClick={() => {
-                                setDoctorToEdit(doc);
-                                setIsCreateOpen(true);
-                              }}
-                            >
-                              <Edit2 className="h-4 w-4 text-slate-500 hover:text-sky-600" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600"
-                              title="Delete doctor"
-                              onClick={() => setDoctorToDelete(doc)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {(isAdmin || user?.email === doc.email) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                title="Edit profile"
+                                onClick={() => {
+                                  setDoctorToEdit(doc);
+                                  setIsCreateOpen(true);
+                                }}
+                              >
+                                <Edit2 className="h-4 w-4 text-slate-500 hover:text-sky-600" />
+                              </Button>
+                            )}
+                            {isAdmin && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-rose-600"
+                                title="Delete doctor"
+                                onClick={() => setDoctorToDelete(doc)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>

@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import AppShell from '@/components/layout/AppShell';
+import { useAuth } from '@/features/auth/AuthContext';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAnalyticsOverview } from '@/features/analytics/useAnalytics';
@@ -34,6 +36,15 @@ const HOSPITALS_DATA = [
 ];
 
 export default function AnalyticsPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user && user.role === 'patient') {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
+
   const { data: overview, isLoading } = useAnalyticsOverview();
   const [timelineRange, setTimelineRange] = useState<string>('30d');
 

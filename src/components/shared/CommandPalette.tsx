@@ -24,6 +24,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import api from '@/lib/api';
+import { useAuth } from '@/features/auth/AuthContext';
 import { Doctor, Patient } from '@/types';
 
 interface CommandPaletteProps {
@@ -38,6 +39,8 @@ export default function CommandPalette({
   onTriggerNewDoctor,
 }: CommandPaletteProps) {
   const router = useRouter();
+  const { user } = useAuth();
+  const role = user?.role || 'admin';
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -46,57 +49,67 @@ export default function CommandPalette({
   const [patientResults, setPatientResults] = useState<Patient[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Navigation items
-  const staticNavigation = useMemo(
-    () => [
+  // Navigation items filtered by role
+  const staticNavigation = useMemo(() => {
+    const items = [
       {
         id: 'nav-dash',
         category: 'Navigation',
-        title: 'Dashboard Overview',
-        subtitle: 'Key clinic statistics, trends, and top performers',
+        title: role === 'patient' ? 'My Care Portal' : role === 'doctor' ? 'Practice Hub' : role === 'staff' ? 'Admissions Desk' : 'Dashboard Overview',
+        subtitle: role === 'patient' ? 'View medical record and attending physician' : 'Key clinic statistics and workflow',
         icon: LayoutDashboard,
         href: '/dashboard',
       },
       {
         id: 'nav-docs',
         category: 'Navigation',
-        title: 'Doctors Directory',
-        subtitle: 'Browse, filter, and manage registered doctors',
+        title: role === 'patient' ? 'My Attending Doctor' : 'Doctors Directory',
+        subtitle: 'Browse and inspect registered doctors',
         icon: Stethoscope,
         href: '/doctors',
       },
-      {
+    ];
+
+    if (role !== 'patient') {
+      items.push({
         id: 'nav-pats',
         category: 'Navigation',
-        title: 'Patients Roster',
+        title: role === 'doctor' ? 'My Assigned Patients' : 'Patients Roster',
         subtitle: 'View admitted patients and medical conditions',
         icon: Users,
         href: '/patients',
-      },
-      {
+      });
+    }
+
+    if (role === 'admin') {
+      items.push({
         id: 'nav-stats',
         category: 'Navigation',
         title: 'Clinical Analytics',
         subtitle: 'Admission breakdown and hospital distributions',
         icon: BarChart3,
         href: '/analytics',
-      },
-      {
-        id: 'nav-prof',
-        category: 'Navigation',
-        title: 'Profile & Settings',
-        subtitle: 'Admin credentials and session management',
-        icon: User,
-        href: '/profile',
-      },
-    ],
-    []
-  );
+      });
+    }
 
-  // Quick Action items
-  const staticActions = useMemo(
-    () => [
-      {
+    items.push({
+      id: 'nav-prof',
+      category: 'Navigation',
+      title: 'Profile & Settings',
+      subtitle: 'Account credentials and session management',
+      icon: User,
+      href: '/profile',
+    });
+
+    return items;
+  }, [role]);
+
+  // Quick Action items filtered by role
+  const staticActions = useMemo(() => {
+    const actions = [];
+
+    if (role === 'admin') {
+      actions.push({
         id: 'act-new-doc',
         category: 'Quick Actions',
         title: 'Register New Doctor',
@@ -110,26 +123,32 @@ export default function CommandPalette({
             router.push('/doctors?action=create');
           }
         },
-      },
-      {
-        id: 'act-view-active',
-        category: 'Quick Actions',
-        title: 'Filter Active Doctors Only',
-        subtitle: 'Jump to doctors currently on duty',
-        icon: Activity,
-        href: '/doctors?status=Active',
-      },
-      {
-        id: 'act-view-critical',
-        category: 'Quick Actions',
-        title: 'View Critical Patients',
-        subtitle: 'Review high-priority patient admissions',
-        icon: Users,
-        href: '/patients?status=Critical',
-      },
-    ],
-    [onOpenChange, onTriggerNewDoctor, router]
-  );
+      });
+    }
+
+    if (role !== 'patient') {
+      actions.push(
+        {
+          id: 'act-view-active',
+          category: 'Quick Actions',
+          title: 'Filter Active Doctors Only',
+          subtitle: 'Jump to doctors currently on duty',
+          icon: Activity,
+          href: '/doctors?status=Active',
+        },
+        {
+          id: 'act-view-critical',
+          category: 'Quick Actions',
+          title: 'View Critical Patients',
+          subtitle: 'Review high-priority patient admissions',
+          icon: Users,
+          href: '/patients?status=Critical',
+        }
+      );
+    }
+
+    return actions;
+  }, [role, onOpenChange, onTriggerNewDoctor, router]);
 
   // Fetch doctors and patients matching query
   useEffect(() => {
@@ -151,15 +170,19 @@ export default function CommandPalette({
     const timer = setTimeout(async () => {
       try {
         setIsSearching(true);
-        const [docRes, patRes] = await Promise.all([
+        const promises: Promise<any>[] = [
           api.get(`/doctors?search=${encodeURIComponent(query)}&limit=4`),
-          api.get(`/patients?search=${encodeURIComponent(query)}&limit=4`),
-        ]);
+        ];
+        if (role !== 'patient') {
+          promises.push(api.get(`/patients?search=${encodeURIComponent(query)}&limit=4`));
+        }
 
-        if (docRes.data?.data) {
+        const [docRes, patRes] = await Promise.all(promises);
+
+        if (docRes?.data?.data) {
           setDoctorResults(docRes.data.data);
         }
-        if (patRes.data?.data) {
+        if (patRes?.data?.data) {
           setPatientResults(patRes.data.data);
         }
       } catch {
@@ -170,7 +193,7 @@ export default function CommandPalette({
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [query, open]);
+  }, [query, open, role]);
 
   // Combined flat list for keyboard navigation
   const allItems = useMemo(() => {
