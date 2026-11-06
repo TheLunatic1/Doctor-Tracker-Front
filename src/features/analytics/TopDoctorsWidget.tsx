@@ -71,6 +71,7 @@ export default function TopDoctorsWidget() {
                       width={36}
                       height={36}
                       className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-sky-200"
+                      unoptimized={doc.avatar.startsWith('data:')}
                     />
                   ) : (
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">

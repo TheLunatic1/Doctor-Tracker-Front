@@ -21,6 +21,7 @@ import {
   Phone,
   Mail,
   ArrowRight,
+  Camera,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -402,6 +403,7 @@ export default function DoctorsPage() {
                                 width={36}
                                 height={36}
                                 className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-sky-200"
+                                unoptimized={doc.avatar.startsWith('data:')}
                               />
                             ) : (
                               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-xs ring-2 ring-sky-200">
@@ -485,6 +487,7 @@ export default function DoctorsPage() {
                             width={44}
                             height={44}
                             className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-sky-200"
+                            unoptimized={doc.avatar.startsWith('data:')}
                           />
                         ) : (
                           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-800 font-bold text-sm ring-2 ring-sky-200">
@@ -542,22 +545,48 @@ export default function DoctorsPage() {
               </div>
 
               <div className="text-center space-y-2">
-                {selectedDoctor.avatar ? (
-                  <Image
-                    src={selectedDoctor.avatar}
-                    alt={selectedDoctor.name}
-                    width={80}
-                    height={80}
-                    className="mx-auto h-20 w-20 rounded-full object-cover shadow-lg shadow-sky-500/20 ring-4 ring-sky-50"
-                  />
-                ) : (
-                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-extrabold text-2xl shadow-lg shadow-sky-500/20 ring-4 ring-sky-50">
-                    {selectedDoctor.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
+                <div
+                  className="relative group mx-auto h-20 w-20 cursor-pointer"
+                  onClick={() => {
+                    setDoctorToEdit(selectedDoctor);
+                    setIsCreateOpen(true);
+                  }}
+                  title="Click to change profile picture or edit doctor"
+                >
+                  {selectedDoctor.avatar ? (
+                    <Image
+                      src={selectedDoctor.avatar}
+                      alt={selectedDoctor.name}
+                      width={80}
+                      height={80}
+                      className="mx-auto h-20 w-20 rounded-full object-cover shadow-lg shadow-sky-500/20 ring-4 ring-sky-50"
+                      unoptimized={selectedDoctor.avatar.startsWith('data:')}
+                    />
+                  ) : (
+                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-extrabold text-2xl shadow-lg shadow-sky-500/20 ring-4 ring-sky-50">
+                      {selectedDoctor.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 rounded-full bg-black/45 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[10px] font-bold gap-0.5">
+                    <Camera className="h-4 w-4" />
+                    <span>Change</span>
                   </div>
-                )}
+                </div>
                 <h3 className="text-lg font-bold text-slate-900">{selectedDoctor.name}</h3>
                 <p className="text-xs text-sky-700 font-semibold">{selectedDoctor.specialization}</p>
                 <p className="text-xs text-slate-400">{selectedDoctor.qualification}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDoctorToEdit(selectedDoctor);
+                    setIsCreateOpen(true);
+                  }}
+                  className="h-7 text-xs rounded-xl gap-1.5 text-slate-600 border-slate-200 hover:border-sky-400 hover:text-sky-700 hover:bg-sky-50"
+                >
+                  <Camera className="h-3.5 w-3.5 text-sky-600" />
+                  Change Picture
+                </Button>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-center">

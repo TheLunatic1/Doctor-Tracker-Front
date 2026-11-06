@@ -17,6 +17,8 @@ import {
   Trash2,
   Search,
   CheckCircle2,
+  Edit2,
+  Camera,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Pagination from '@/components/shared/Pagination';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import AddPatientModal from '@/features/doctors/AddPatientModal';
+import DoctorFormModal from '@/features/doctors/DoctorFormModal';
 import {
   useDoctor,
   useDoctorPatients,
@@ -47,6 +50,7 @@ export default function DoctorDetailPage({ params }: PageProps) {
   const [patientPage, setPatientPage] = useState(1);
   const [patientSearch, setPatientSearch] = useState('');
   const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
+  const [isEditDoctorOpen, setIsEditDoctorOpen] = useState(false);
   const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null);
 
   const debouncedPatientSearch = useDebounce(patientSearch, 300);
@@ -115,22 +119,38 @@ export default function DoctorDetailPage({ params }: PageProps) {
           </Link>
         </Button>
 
-        <Button
-          onClick={() => setIsAddPatientOpen(true)}
-          variant="primary"
-          size="sm"
-          className="gap-2 rounded-xl shadow-sm"
-        >
-          <Plus className="h-4 w-4" />
-          Add Patient
-        </Button>
+        <div className="flex items-center gap-2.5">
+          <Button
+            onClick={() => setIsEditDoctorOpen(true)}
+            variant="outline"
+            size="sm"
+            className="gap-2 rounded-xl text-xs bg-white border-slate-200 hover:border-sky-300 hover:text-sky-700"
+          >
+            <Edit2 className="h-3.5 w-3.5 text-slate-500" />
+            Edit Profile
+          </Button>
+
+          <Button
+            onClick={() => setIsAddPatientOpen(true)}
+            variant="primary"
+            size="sm"
+            className="gap-2 rounded-xl shadow-sm"
+          >
+            <Plus className="h-4 w-4" />
+            Add Patient
+          </Button>
+        </div>
       </div>
 
       {/* Main Doctor Header Profile Card */}
       <Card className="overflow-hidden border-slate-100 shadow-sm bg-gradient-to-r from-white via-white to-sky-50/40 p-6 md:p-8">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <div className="relative">
+            <div
+              className="relative group cursor-pointer"
+              onClick={() => setIsEditDoctorOpen(true)}
+              title="Click to change profile picture or edit doctor"
+            >
               {doctor.avatar ? (
                 <Image
                   src={doctor.avatar}
@@ -138,12 +158,17 @@ export default function DoctorDetailPage({ params }: PageProps) {
                   width={96}
                   height={96}
                   className="h-24 w-24 shrink-0 rounded-3xl object-cover shadow-xl shadow-sky-500/20 ring-4 ring-white"
+                  unoptimized={doctor.avatar.startsWith('data:')}
                 />
               ) : (
                 <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-tr from-sky-500 to-blue-600 text-white font-black text-3xl shadow-xl shadow-sky-500/20 ring-4 ring-white">
                   {doctor.name.replace('Dr. ', '').slice(0, 2).toUpperCase()}
                 </div>
               )}
+              <div className="absolute inset-0 rounded-3xl bg-black/45 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[10px] font-bold gap-1 shadow-inner">
+                <Camera className="h-5 w-5" />
+                <span>Change Photo</span>
+              </div>
               <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white ring-2 ring-white">
                 <CheckCircle2 className="h-4 w-4" />
               </span>
@@ -521,6 +546,13 @@ export default function DoctorDetailPage({ params }: PageProps) {
         confirmLabel="Remove Patient"
         isLoading={deletePatientMutation.isPending}
         onConfirm={handleDeletePatientConfirm}
+      />
+
+      {/* Edit Doctor Modal with Profile Picture Upload */}
+      <DoctorFormModal
+        open={isEditDoctorOpen}
+        onOpenChange={setIsEditDoctorOpen}
+        doctorToEdit={doctor}
       />
     </AppShell>
   );
