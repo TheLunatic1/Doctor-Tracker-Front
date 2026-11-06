@@ -25,7 +25,6 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Doctor, Patient } from '@/types';
-import { getDoctorWorkload } from '@/lib/workload';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -378,23 +377,18 @@ export default function CommandPalette({
                       </div>
                     </div>
 
-                    {/* Right Workload / Action pill */}
+                    {/* Right pill */}
                     {item.type === 'doctor' && (
                       <div className="shrink-0 text-right">
-                        {(() => {
-                          const load = getDoctorWorkload(item.doctor.patientCount || 0);
-                          return (
-                            <span
-                              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                                isSelected
-                                  ? 'bg-white/20 text-white'
-                                  : load.badgeClass
-                              }`}
-                            >
-                              {item.doctor.patientCount ?? 0} pts • {load.label}
-                            </span>
-                          );
-                        })()}
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            isSelected
+                              ? 'bg-white/20 text-white'
+                              : 'bg-sky-50 text-sky-700 border border-sky-100'
+                          }`}
+                        >
+                          {item.doctor.patientCount ?? 0} patients
+                        </span>
                       </div>
                     )}
 

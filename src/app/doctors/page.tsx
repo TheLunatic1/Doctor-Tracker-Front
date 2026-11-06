@@ -38,7 +38,6 @@ import { useDoctors, useDeleteDoctor } from '@/features/doctors/useDoctors';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Doctor } from '@/types';
 import { cn } from '@/lib/utils';
-import { getDoctorWorkload } from '@/lib/workload';
 
 const SPECIALIZATIONS = [
   'All Specializations',
@@ -544,31 +543,9 @@ export default function DoctorsPage() {
                         <td className="py-3.5 px-4 text-slate-600 hidden sm:table-cell">{doc.phone}</td>
                         <td className="py-3.5 px-4 text-slate-500 hidden md:table-cell">{doc.email}</td>
                         <td className="py-3.5 px-4">
-                          {(() => {
-                            const load = getDoctorWorkload(doc.patientCount ?? 0);
-                            return (
-                              <div className="flex flex-col gap-1 min-w-[95px]">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-bold text-slate-900 text-sm">
-                                    {doc.patientCount ?? 0}
-                                  </span>
-                                  <span
-                                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold border ${load.badgeClass}`}
-                                    title={load.description}
-                                  >
-                                    <span className={`h-1.5 w-1.5 rounded-full ${load.dotColor}`} />
-                                    {load.label}
-                                  </span>
-                                </div>
-                                <div className="w-16 h-1 rounded-full bg-slate-100 overflow-hidden">
-                                  <div
-                                    className={`h-full ${load.barColor} transition-all`}
-                                    style={{ width: `${load.percentage}%` }}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })()}
+                          <span className="font-bold text-slate-900 text-sm">
+                            {doc.patientCount ?? 0}
+                          </span>
                         </td>
                         <td className="py-3.5 px-4">
                           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
@@ -749,29 +726,6 @@ export default function DoctorsPage() {
                   </p>
                 </div>
               </div>
-
-              {/* Doctor Clinical Capacity & Workload Load-Balancing Status */}
-              {(() => {
-                const load = getDoctorWorkload(selectedDoctor.patientCount || 0);
-                return (
-                  <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3.5 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-slate-700">Clinical Workload</span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${load.badgeClass}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${load.dotColor}`} />
-                        {load.label} ({load.percentage}%)
-                      </span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
-                      <div
-                        className={`h-full ${load.barColor} transition-all duration-300`}
-                        style={{ width: `${load.percentage}%` }}
-                      />
-                    </div>
-                    <p className="text-[10px] text-slate-500 text-left">{load.description}</p>
-                  </div>
-                );
-              })()}
 
               <div className="space-y-3 text-xs text-slate-600">
                 <div className="flex items-center gap-2.5">

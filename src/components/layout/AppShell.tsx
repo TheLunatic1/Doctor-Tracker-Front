@@ -28,6 +28,7 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
   }, []);
 
   const toggleCollapse = () => {
+    setIsHovered(false);
     setIsCollapsed((prev) => {
       const next = !prev;
       try {
@@ -45,7 +46,7 @@ export default function AppShell({ children, title, subtitle }: AppShellProps) {
       <div
         className={cn(
           'hidden md:block shrink-0 transition-all duration-300 ease-in-out relative',
-          isCollapsed ? (isHovered ? 'w-20 z-50' : 'w-20 z-40') : 'w-64 z-40'
+          isCollapsed ? (isHovered ? 'w-64 z-50' : 'w-20 z-40') : 'w-64 z-40'
         )}
       >
         <div
