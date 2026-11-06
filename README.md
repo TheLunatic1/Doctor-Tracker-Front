@@ -159,9 +159,12 @@ npx playwright test
 
 ---
 
-## 🔐 Demo Credentials
+## 🌐 Live Web Application
 
-Use the one-click **"Fill Demo Credentials"** button on `/login` or enter manually:
+- **Live URL:** [https://toha.tail2c2947.ts.net:8443](https://toha.tail2c2947.ts.net:8443)
+
+## 🔐 Authentication Credentials
+
 - **Email:** `admin@doctortracker.com`
 - **Password:** `Admin123456!`
 
